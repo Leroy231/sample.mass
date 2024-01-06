@@ -3,4 +3,25 @@
 #include "MassSample.h"
 #include "Modules/ModuleManager.h"
 
-IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, MassSample, "MassSample" );
+#if WITH_GAMEPLAY_DEBUGGER
+#include "GameplayDebugger.h"
+#include "GameplayDebuggerCategory_ProjectM.h"
+#endif // WITH_GAMEPLAY_DEBUGGER
+
+class FMassSampleGameModuleImpl
+	: public FDefaultGameModuleImpl
+{
+public:
+	virtual void StartupModule() override
+	{
+		FDefaultGameModuleImpl::StartupModule();
+
+#if WITH_GAMEPLAY_DEBUGGER
+	IGameplayDebugger& GameplayDebuggerModule = IGameplayDebugger::Get();
+	GameplayDebuggerModule.RegisterCategory("ProjectM", IGameplayDebugger::FOnGetCategory::CreateStatic(&FGameplayDebuggerCategory_ProjectM::MakeInstance), EGameplayDebuggerCategoryState::EnabledInGameAndSimulate, 1);
+	GameplayDebuggerModule.NotifyCategoriesChanged();
+#endif
+	}
+};
+
+IMPLEMENT_PRIMARY_GAME_MODULE( FMassSampleGameModuleImpl, MassSample, "MassSample" );
