@@ -7,6 +7,17 @@
 #include "MassStateTreeExecutionContext.h"
 #include "StateTreeLinker.h"
 
+namespace MS::StateTreeTask_Move::Tweakables
+{
+	bool bSkipMoveTask = false;
+
+	FAutoConsoleVariableRef CVars[] =
+	{
+		FAutoConsoleVariableRef(TEXT("ms.SkipMoveTask"), bSkipMoveTask, TEXT("Skip FStateTreeTask_Move"), ECVF_Cheat),
+	};
+}
+
+
 bool FStateTreeTask_Move::Link(FStateTreeLinker& Linker)
 {
     Linker.LinkExternalData(Location);
@@ -18,6 +29,10 @@ bool FStateTreeTask_Move::Link(FStateTreeLinker& Linker)
 EStateTreeRunStatus FStateTreeTask_Move::EnterState(FStateTreeExecutionContext& Context,
     const FStateTreeTransitionResult& Transition) const
 {
+	if (MS::StateTreeTask_Move::Tweakables::bSkipMoveTask)
+	{
+		return EStateTreeRunStatus::Succeeded;
+	}
 
     const FMassStateTreeExecutionContext& MassContext = static_cast<FMassStateTreeExecutionContext&>(Context);
     FMassVelocityFragment& MassVelocityFragment = MassContext.GetExternalData(VelocityHandle);
