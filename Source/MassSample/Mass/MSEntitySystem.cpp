@@ -3,23 +3,31 @@
 #include "MassCommonFragments.h"
 #include "MassEntityConfigAsset.h"
 #include "MassEntitySubsystem.h"
-#include "MassReplicationFragments.h"
 #include "MassReplicationSubsystem.h"
-#include "MassSpawnerTypes.h"
 #include "MassSample/MSAssetManager.h"
 #include "Replication/MSBubbleInfo.h"
 #include "MassSample/Data/MSGameData.h"
 
-void UMSEntitySystem::Spawn(UMassEntityConfigAsset* EntityConfig, const FTransform& Transform, int Count)
+namespace MSEntitySystem::Tweakables
+{
+	int32 SpawnCount = 10000;
+
+	FAutoConsoleVariableRef CVars[] =
+	{
+		FAutoConsoleVariableRef(TEXT("ms.SpawnCount"), SpawnCount, TEXT("Set number of rabbits to spawn"), ECVF_Cheat),
+	};
+}
+
+void UMSEntitySystem::Spawn(UMassEntityConfigAsset* EntityConfig, const FTransform& Transform)
 {
 	const FMassEntityTemplate& EntityTemplate = EntityConfig->GetOrCreateEntityTemplate(*GetWorld());
 
 	TArray<FMassEntityHandle> Entities;
-	auto CreationContext = EntityManager->BatchCreateEntities(EntityTemplate.GetArchetype(), EntityTemplate.GetSharedFragmentValues(), Count, Entities);
+	auto CreationContext = EntityManager->BatchCreateEntities(EntityTemplate.GetArchetype(), EntityTemplate.GetSharedFragmentValues(), MSEntitySystem::Tweakables::SpawnCount, Entities);
 	TConstArrayView<FInstancedStruct> FragmentInstances = EntityTemplate.GetInitialFragmentValues();
 	EntityManager->BatchSetEntityFragmentsValues(CreationContext->GetEntityCollection(), FragmentInstances);
 
-	int SqrtCount = FMath::Sqrt((float)Count);
+	int SqrtCount = FMath::Sqrt((float)MSEntitySystem::Tweakables::SpawnCount);
 
 	int j = 0;
 	static constexpr float EntitySpacing = 1000.f;

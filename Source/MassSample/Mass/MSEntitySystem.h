@@ -11,7 +11,7 @@ class UMSEntitySystem : public UWorldSubsystem
 
 public:
     UFUNCTION(BlueprintCallable, Category = "MassSample")
-    void Spawn(UMassEntityConfigAsset* EntityConfig, const FTransform& Transform, int Count = 1);
+    void Spawn(UMassEntityConfigAsset* EntityConfig, const FTransform& Transform);
 
 protected:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
