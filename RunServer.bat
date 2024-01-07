@@ -1,1 +1,1 @@
-start  Binaries\Win64\MassSampleServer.exe -log -Networkprofiler=true
+start  Binaries\Win64\MassSampleServer.exe -log
