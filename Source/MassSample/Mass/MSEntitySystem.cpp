@@ -12,55 +12,57 @@
 
 void UMSEntitySystem::Spawn(UMassEntityConfigAsset* EntityConfig, const FTransform& Transform, int Count)
 {
-    const FMassEntityTemplate& EntityTemplate = EntityConfig->GetOrCreateEntityTemplate(*GetWorld());
+	const FMassEntityTemplate& EntityTemplate = EntityConfig->GetOrCreateEntityTemplate(*GetWorld());
 
-    TArray<FMassEntityHandle> Entities;
-    auto CreationContext = EntityManager->BatchCreateEntities(EntityTemplate.GetArchetype(), EntityTemplate.GetSharedFragmentValues(), Count, Entities);
-    TConstArrayView<FInstancedStruct> FragmentInstances = EntityTemplate.GetInitialFragmentValues();
-    EntityManager->BatchSetEntityFragmentsValues(CreationContext->GetEntityCollection(), FragmentInstances);
+	TArray<FMassEntityHandle> Entities;
+	auto CreationContext = EntityManager->BatchCreateEntities(EntityTemplate.GetArchetype(), EntityTemplate.GetSharedFragmentValues(), Count, Entities);
+	TConstArrayView<FInstancedStruct> FragmentInstances = EntityTemplate.GetInitialFragmentValues();
+	EntityManager->BatchSetEntityFragmentsValues(CreationContext->GetEntityCollection(), FragmentInstances);
 
-    int SqrtCount = FMath::Sqrt((float)Count);
+	int SqrtCount = FMath::Sqrt((float)Count);
 
-    int j = 0;
-    for (int i = 0; i < Entities.Num(); ++i)
-    {
-        FMassEntityView EntityView(EntityTemplate.GetArchetype(), Entities[i]);
-        auto& TransformData = EntityView.GetFragmentData<FTransformFragment>();
+	int j = 0;
+	static constexpr float EntitySpacing = 1000.f;
+	const float GridHalfSize = (SqrtCount * EntitySpacing) / 2.f;
+	for (int i = 0; i < Entities.Num(); ++i)
+	{
+		FMassEntityView EntityView(EntityTemplate.GetArchetype(), Entities[i]);
+		auto& TransformData = EntityView.GetFragmentData<FTransformFragment>();
 
-        FVector RabbitLocation = Transform.GetLocation();
-        RabbitLocation.X = (i % SqrtCount) * 100;
-        if (i % SqrtCount == 0) ++j;
-        RabbitLocation.Y = j * 100;
-        TransformData.SetTransform(FTransform(RabbitLocation));
-    }
+		FVector RabbitLocation = Transform.GetLocation();
+		RabbitLocation.X = (i % SqrtCount) * EntitySpacing - GridHalfSize;
+		if (i % SqrtCount == 0) ++j;
+		RabbitLocation.Y = j * EntitySpacing - GridHalfSize;
+		TransformData.SetTransform(FTransform(RabbitLocation));
+	}
 }
 
 void UMSEntitySystem::Initialize(FSubsystemCollectionBase& Collection)
 {
-    auto* MassSubsystem = Collection.InitializeDependency<UMassEntitySubsystem>();
-    check(MassSubsystem);
+	auto* MassSubsystem = Collection.InitializeDependency<UMassEntitySubsystem>();
+	check(MassSubsystem);
 
-    EntityManager = MassSubsystem->GetMutableEntityManager().AsShared();
+	EntityManager = MassSubsystem->GetMutableEntityManager().AsShared();
 }
 
 void UMSEntitySystem::Deinitialize()
 {
-    EntityManager.Reset();
+	EntityManager.Reset();
 }
 
 void UMSEntitySystem::PostInitialize()
 {
-    auto* ReplicationSubsystem = UWorld::GetSubsystem<UMassReplicationSubsystem>(GetWorld());
-    check(ReplicationSubsystem);
+	auto* ReplicationSubsystem = UWorld::GetSubsystem<UMassReplicationSubsystem>(GetWorld());
+	check(ReplicationSubsystem);
 
-    ReplicationSubsystem->RegisterBubbleInfoClass(AMSUnitClientBubbleInfo::StaticClass());
+	ReplicationSubsystem->RegisterBubbleInfoClass(AMSUnitClientBubbleInfo::StaticClass());
 
-    auto* SpawnerSubsystem = UWorld::GetSubsystem<UMassSpawnerSubsystem>(GetWorld());
-    check(SpawnerSubsystem);
+	auto* SpawnerSubsystem = UWorld::GetSubsystem<UMassSpawnerSubsystem>(GetWorld());
+	check(SpawnerSubsystem);
 
-    if (UMSAssetManager::Get()->GameData)
-    {
-        const auto& EntityTemplate = UMSAssetManager::Get()->GameData->UnitEntityConfig->GetOrCreateEntityTemplate(*GetWorld());
-        ensure(EntityTemplate.IsValid());
-    }
+	if (UMSAssetManager::Get()->GameData)
+	{
+		const auto& EntityTemplate = UMSAssetManager::Get()->GameData->UnitEntityConfig->GetOrCreateEntityTemplate(*GetWorld());
+		ensure(EntityTemplate.IsValid());
+	}
 }
