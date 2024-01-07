@@ -7,6 +7,7 @@
 #include "MassSample/MSAssetManager.h"
 #include "Replication/MSBubbleInfo.h"
 #include "MassSample/Data/MSGameData.h"
+#include "MassSample/Unit/MSUnitFragments.h"
 
 namespace MSEntitySystem::Tweakables
 {
@@ -16,6 +17,22 @@ namespace MSEntitySystem::Tweakables
 	{
 		FAutoConsoleVariableRef(TEXT("ms.SpawnCount"), SpawnCount, TEXT("Set number of rabbits to spawn"), ECVF_Cheat),
 	};
+}
+
+/*static*/ FMassEntityHandle GetMassEntityHandle(const AActor* Actor)
+{
+	if (Actor == nullptr)
+	{
+		return FMassEntityHandle();
+	}
+
+	const UMassAgentComponent* AgentComponent = Cast<UMassAgentComponent>(Actor->GetComponentByClass(UMassAgentComponent::StaticClass()));
+	if (!AgentComponent)
+	{
+		return FMassEntityHandle();
+	}
+
+	return AgentComponent->GetEntityHandle();
 }
 
 void UMSEntitySystem::Spawn(UMassEntityConfigAsset* EntityConfig, const FTransform& Transform)
@@ -73,4 +90,14 @@ void UMSEntitySystem::PostInitialize()
 		const auto& EntityTemplate = UMSAssetManager::Get()->GameData->UnitEntityConfig->GetOrCreateEntityTemplate(*GetWorld());
 		ensure(EntityTemplate.IsValid());
 	}
+}
+
+int32 UMSEntitySystem::GetHealthForActor(AActor* Actor)
+{
+	if (FMSHealthFragment* HealthFragment = GetFragmentForActor<FMSHealthFragment>(Actor))
+	{
+		return HealthFragment->Health;
+	}
+
+	return -1;
 }
