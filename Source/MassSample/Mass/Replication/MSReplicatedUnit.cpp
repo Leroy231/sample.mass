@@ -72,3 +72,23 @@ void AMSUnitClientBubbleInfo::GetLifetimeReplicatedProps(TArray<FLifetimePropert
     // Technically, this doesn't need to be PushModel based because it's a FastArray and they ignore it.
     DOREPLIFETIME_WITH_PARAMS_FAST(AMSUnitClientBubbleInfo, UnitSerializer, SharedParams);
 }
+
+//----------------------------------------------------------------------//
+//  FMassReplicationProcessorHealthHandler
+//----------------------------------------------------------------------//
+void FMassReplicationProcessorHealthHandler::AddRequirements(FMassEntityQuery& InQuery)
+{
+	InQuery.AddRequirement<FMSHealthFragment>(EMassFragmentAccess::ReadOnly);
+}
+
+void FMassReplicationProcessorHealthHandler::CacheFragmentViews(FMassExecutionContext& ExecContext)
+{
+	HealthList = ExecContext.GetMutableFragmentView<FMSHealthFragment>();
+}
+
+void FMassReplicationProcessorHealthHandler::AddEntity(const int32 EntityIdx, FReplicatedAgentHealthData& InOutReplicatedHealthData) const
+{
+	const FMSHealthFragment& HealthFragment = HealthList[EntityIdx];
+
+	InOutReplicatedHealthData.SetHealth(HealthFragment.Health);
+}

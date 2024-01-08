@@ -1,7 +1,6 @@
 ﻿#include "MSReplicator.h"
 
 #include "MassExecutionContext.h"
-#include "MSReplicatedUnit.h"
 #include "MassReplicationTransformHandlers.h"
 
 //----------------------------------------------------------------------//
@@ -58,24 +57,4 @@ void UMSReplicator::ProcessClientReplication(FMassExecutionContext& Context, FMa
 
 	CalculateClientReplication<FMSUnitFastArrayItem>(Context, ReplicationContext, CacheViewsCallback, AddEntityCallback, ModifyEntityCallback, RemoveEntityCallback);
 #endif // UE_REPLICATION_COMPILE_SERVER_CODE
-}
-
-//----------------------------------------------------------------------//
-//  FMassReplicationProcessorHealthHandler
-//----------------------------------------------------------------------//
-void FMassReplicationProcessorHealthHandler::AddRequirements(FMassEntityQuery& InQuery)
-{
-	InQuery.AddRequirement<FMSHealthFragment>(EMassFragmentAccess::ReadOnly);
-}
-
-void FMassReplicationProcessorHealthHandler::CacheFragmentViews(FMassExecutionContext& ExecContext)
-{
-	HealthList = ExecContext.GetMutableFragmentView<FMSHealthFragment>();
-}
-
-void FMassReplicationProcessorHealthHandler::AddEntity(const int32 EntityIdx, FReplicatedAgentHealthData& InOutReplicatedHealthData) const
-{
-	const FMSHealthFragment& HealthFragment = HealthList[EntityIdx];
-
-	InOutReplicatedHealthData.SetHealth(HealthFragment.Health);
 }
