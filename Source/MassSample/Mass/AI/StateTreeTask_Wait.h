@@ -16,7 +16,7 @@ struct FStateTreeTask_WaitData
     GENERATED_BODY()
 
     UPROPERTY(EditAnywhere, Category = Parameter)
-    float Duration;
+    float Duration = 0.f;
 };
 
 USTRUCT()

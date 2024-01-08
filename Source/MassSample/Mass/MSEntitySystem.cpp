@@ -3,11 +3,12 @@
 #include "MassCommonFragments.h"
 #include "MassEntityConfigAsset.h"
 #include "MassEntitySubsystem.h"
+#include "MassEntityView.h"
 #include "MassReplicationSubsystem.h"
 #include "MassSample/MSAssetManager.h"
-#include "Replication/MSBubbleInfo.h"
 #include "MassSample/Data/MSGameData.h"
 #include "MassSample/Unit/MSUnitFragments.h"
+#include "Replication/MSReplicatedUnit.h"
 
 namespace MSEntitySystem::Tweakables
 {

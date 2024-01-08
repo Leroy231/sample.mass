@@ -1,9 +1,7 @@
-﻿#include "MSBubbleInfo.h"
+﻿#include "MSReplicatedUnit.h"
 
-#include "MassEntityManager.h"
 #include "Net/UnrealNetwork.h"
 #include "MassExecutionContext.h"
-
 
 #if UE_REPLICATION_COMPILE_CLIENT_CODE
 void FMSUnitClientBubbleHandler::PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize)
@@ -11,16 +9,19 @@ void FMSUnitClientBubbleHandler::PostReplicatedAdd(const TArrayView<int32> Added
     auto AddRequirementsForSpawnQuery = [this](FMassEntityQuery& InQuery)
     {
         TransformHandler.AddRequirementsForSpawnQuery(InQuery);
+        HealthHandler.AddRequirementsForSpawnQuery(InQuery);
     };
 
     auto CacheFragmentViewsForSpawnQuery = [this](FMassExecutionContext& InExecContext)
     {
         TransformHandler.CacheFragmentViewsForSpawnQuery(InExecContext);
+        HealthHandler.CacheFragmentViewsForSpawnQuery(InExecContext);
     };
 
     auto SetSpawnedEntityData = [this](const FMassEntityView& EntityView, const FMSReplicatedUnitAgent& ReplicatedEntity, const int32 EntityIdx)
     {
         TransformHandler.SetSpawnedEntityData(EntityIdx, ReplicatedEntity.GetReplicatedPositionYawData());
+        HealthHandler.SetSpawnedEntityData(EntityIdx, ReplicatedEntity.GetReplicatedHealthData());
     };
 
     auto SetModifiedEntityData = [this](const FMassEntityView& EntityView, const FMSReplicatedUnitAgent& Item)
@@ -31,6 +32,7 @@ void FMSUnitClientBubbleHandler::PostReplicatedAdd(const TArrayView<int32> Added
     PostReplicatedAddHelper(AddedIndices, AddRequirementsForSpawnQuery, CacheFragmentViewsForSpawnQuery, SetSpawnedEntityData, SetModifiedEntityData);
 
     TransformHandler.ClearFragmentViewsForSpawnQuery();
+    HealthHandler.ClearFragmentViewsForSpawnQuery();
 }
 #endif //UE_REPLICATION_COMPILE_SERVER_CODE
 
@@ -50,6 +52,7 @@ void FMSUnitClientBubbleHandler::FMSUnitClientBubbleHandler::PostReplicatedChang
 void FMSUnitClientBubbleHandler::PostReplicatedChangeEntity(const FMassEntityView& EntityView, const FMSReplicatedUnitAgent& Item) const
 {
     TransformHandler.SetModifiedEntityData(EntityView, Item.GetReplicatedPositionYawData());
+    HealthHandler.SetModifiedEntityData(EntityView, Item.GetReplicatedHealthData());
 }
 #endif // UE_REPLICATION_COMPILE_CLIENT_CODE
 

@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "MassReplicationProcessor.h"
+#include "MSReplicatedUnit.h"
 
 #include "MSReplicator.generated.h"
 
@@ -23,3 +24,4 @@ public:
      */
     void ProcessClientReplication(FMassExecutionContext& Context, FMassReplicationContext& ReplicationContext) override;
 };
+
