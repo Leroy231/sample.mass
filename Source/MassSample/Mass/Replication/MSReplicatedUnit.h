@@ -14,8 +14,6 @@ struct MASSSAMPLE_API FReplicatedAgentHealthData
 {
 	GENERATED_BODY()
 
-	friend class FMassClientBubbleHealthHandlerBase;
-
 	FReplicatedAgentHealthData() = default;
 
 	void SetHealth(const int32 InHealth) { Health = InHealth; }
