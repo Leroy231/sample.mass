@@ -6,6 +6,7 @@
 #include "MassReplicationTransformHandlers.h"
 #include "MassEntityView.h"
 #include "MassSample/Unit/MSUnitFragments.h"
+#include "MassReplicationProcessor.h"
 
 #include "MSMassReplicationHelpers.generated.h"
 
@@ -314,4 +315,24 @@ protected:
 protected:
     UPROPERTY(Replicated, Transient)
     FMSUnitClientBubbleSerializer UnitSerializer;
+};
+
+/** Class that handles replication and only runs on the server. It queries Mass entity fragments and sets those values when appropriate using the MassClientBubbleHandler. */
+UCLASS()
+class MASSSAMPLE_API UMSReplicator : public UMassReplicatorBase
+{
+    GENERATED_BODY()
+
+public:
+    /**
+     * Overridden to add specific entity query requirements for replication.
+     * Usually we add replication processor handler requirements.
+     */
+    void AddRequirements(FMassEntityQuery& EntityQuery) override;
+
+    /**
+     * Overridden to process the client replication.
+     * This methods should call CalculateClientReplication with the appropriate callback implementation.
+     */
+    void ProcessClientReplication(FMassExecutionContext& Context, FMassReplicationContext& ReplicationContext) override;
 };
