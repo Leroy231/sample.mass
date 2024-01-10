@@ -18,13 +18,13 @@ void FMSUnitClientBubbleHandler::PostReplicatedAdd(const TArrayView<int32> Added
         HealthHandler.CacheFragmentViewsForSpawnQuery(InExecContext);
     };
 
-    auto SetSpawnedEntityData = [this](const FMassEntityView& EntityView, const FMSReplicatedUnitAgent& ReplicatedEntity, const int32 EntityIdx)
+    auto SetSpawnedEntityData = [this](const FMassEntityView& EntityView, const FReplicatedMSUnitAgent& ReplicatedEntity, const int32 EntityIdx)
     {
         TransformHandler.SetSpawnedEntityData(EntityIdx, ReplicatedEntity.GetReplicatedPositionYawData());
         HealthHandler.SetSpawnedEntityData(EntityIdx, ReplicatedEntity.GetReplicatedHealthData());
     };
 
-    auto SetModifiedEntityData = [this](const FMassEntityView& EntityView, const FMSReplicatedUnitAgent& Item)
+    auto SetModifiedEntityData = [this](const FMassEntityView& EntityView, const FReplicatedMSUnitAgent& Item)
     {
         PostReplicatedChangeEntity(EntityView, Item);
     };
@@ -39,7 +39,7 @@ void FMSUnitClientBubbleHandler::PostReplicatedAdd(const TArrayView<int32> Added
 #if UE_REPLICATION_COMPILE_CLIENT_CODE
 void FMSUnitClientBubbleHandler::FMSUnitClientBubbleHandler::PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize)
 {
-    auto SetModifiedEntityData = [this](const FMassEntityView& EntityView, const FMSReplicatedUnitAgent& Item)
+    auto SetModifiedEntityData = [this](const FMassEntityView& EntityView, const FReplicatedMSUnitAgent& Item)
     {
         PostReplicatedChangeEntity(EntityView, Item);
     };
@@ -49,7 +49,7 @@ void FMSUnitClientBubbleHandler::FMSUnitClientBubbleHandler::PostReplicatedChang
 #endif //UE_REPLICATION_COMPILE_SERVER_CODE
 
 #if UE_REPLICATION_COMPILE_CLIENT_CODE
-void FMSUnitClientBubbleHandler::PostReplicatedChangeEntity(const FMassEntityView& EntityView, const FMSReplicatedUnitAgent& Item) const
+void FMSUnitClientBubbleHandler::PostReplicatedChangeEntity(const FMassEntityView& EntityView, const FReplicatedMSUnitAgent& Item) const
 {
     TransformHandler.SetModifiedEntityData(EntityView, Item.GetReplicatedPositionYawData());
     HealthHandler.SetModifiedEntityData(EntityView, Item.GetReplicatedHealthData());
@@ -118,7 +118,7 @@ void UMSUnitReplicator::ProcessClientReplication(FMassExecutionContext& Context,
 		check(RepSharedFrag);
 	};
 
-	auto AddEntityCallback = [&RepSharedFrag, &PositionYawHandler, &HealthHandler](FMassExecutionContext& Context, const int32 EntityIdx, FMSReplicatedUnitAgent& InReplicatedAgent, const FMassClientHandle ClientHandle) -> FMassReplicatedAgentHandle
+	auto AddEntityCallback = [&RepSharedFrag, &PositionYawHandler, &HealthHandler](FMassExecutionContext& Context, const int32 EntityIdx, FReplicatedMSUnitAgent& InReplicatedAgent, const FMassClientHandle ClientHandle) -> FMassReplicatedAgentHandle
 	{
 		AMSUnitClientBubbleInfo& UnitBubbleInfo = RepSharedFrag->GetTypedClientBubbleInfoChecked<AMSUnitClientBubbleInfo>(ClientHandle);
 

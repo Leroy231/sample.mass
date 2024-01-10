@@ -27,7 +27,7 @@ private:
 
 /** The data that is replicated specific to each Crowd agent */
 USTRUCT()
-struct MASSSAMPLE_API FMSReplicatedUnitAgent : public FReplicatedAgentBase
+struct MASSSAMPLE_API FReplicatedMSUnitAgent : public FReplicatedAgentBase
 {
     GENERATED_BODY()
 
@@ -52,16 +52,16 @@ struct MASSSAMPLE_API FMSUnitFastArrayItem : public FMassFastArrayItemBase
     GENERATED_BODY()
 
     FMSUnitFastArrayItem() = default;
-    FMSUnitFastArrayItem(const FMSReplicatedUnitAgent& InAgent, const FMassReplicatedAgentHandle InHandle)
+    FMSUnitFastArrayItem(const FReplicatedMSUnitAgent& InAgent, const FMassReplicatedAgentHandle InHandle)
         : FMassFastArrayItemBase(InHandle)
         , Agent(InAgent)
     {}
 
     /** This typedef is required to be provided in FMassFastArrayItemBase derived classes (with the associated FReplicatedAgentBase derived class) */
-    using FReplicatedAgentType = FMSReplicatedUnitAgent;
+    using FReplicatedAgentType = FReplicatedMSUnitAgent;
 
     UPROPERTY()
-    FMSReplicatedUnitAgent Agent;
+    FReplicatedMSUnitAgent Agent;
 };
 
 class FMSUnitClientBubbleHandler;
@@ -250,7 +250,7 @@ protected:
     virtual void PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize) override;
     virtual void PostReplicatedChange(const TArrayView<int32> ChAMSedIndices, int32 FinalSize) override;
 
-    void PostReplicatedChangeEntity(const FMassEntityView& EntityView, const FMSReplicatedUnitAgent& Item) const;
+    void PostReplicatedChangeEntity(const FMassEntityView& EntityView, const FReplicatedMSUnitAgent& Item) const;
 #endif //UE_REPLICATION_COMPILE_CLIENT_CODE
 
 
