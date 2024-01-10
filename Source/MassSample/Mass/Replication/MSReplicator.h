@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "MassReplicationProcessor.h"
-#include "MSReplicatedUnit.h"
+#include "MSMassReplicationHelpers.h"
 
 #include "MSReplicator.generated.h"
 

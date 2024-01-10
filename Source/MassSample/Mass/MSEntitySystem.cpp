@@ -8,7 +8,7 @@
 #include "MassSample/MSAssetManager.h"
 #include "MassSample/Data/MSGameData.h"
 #include "MassSample/Unit/MSUnitFragments.h"
-#include "Replication/MSReplicatedUnit.h"
+#include "Replication/MSMassReplicationHelpers.h"
 
 namespace MSEntitySystem::Tweakables
 {

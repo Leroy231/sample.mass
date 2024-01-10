@@ -7,7 +7,7 @@
 #include "MassEntityView.h"
 #include "MassSample/Unit/MSUnitFragments.h"
 
-#include "MSReplicatedUnit.generated.h"
+#include "MSMassReplicationHelpers.generated.h"
 
 USTRUCT()
 struct MASSSAMPLE_API FReplicatedAgentHealthData
