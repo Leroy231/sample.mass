@@ -104,11 +104,11 @@ public:
 
 protected:
 #if UE_REPLICATION_COMPILE_CLIENT_CODE
-	static void SetEntityData(FMSHealthFragment& HealthFragment, const FReplicatedAgentHealthData& ReplicatedHealthData);
+	static void SetEntityData(FMassHealthFragment& HealthFragment, const FReplicatedAgentHealthData& ReplicatedHealthData);
 #endif // UE_REPLICATION_COMPILE_CLIENT_CODE
 
 protected:
-	TArrayView<FMSHealthFragment> HealthList;
+	TArrayView<FMassHealthFragment> HealthList;
 
 	FMSUnitClientBubbleHandler& OwnerHandler;
 };
@@ -145,7 +145,7 @@ void TMassClientBubbleHealthHandler<AgentArrayItem>::SetBubbleHealth(const FMass
 template<typename AgentArrayItem>
 void TMassClientBubbleHealthHandler<AgentArrayItem>::AddRequirementsForSpawnQuery(FMassEntityQuery& InQuery)
 {
-	InQuery.AddRequirement<FMSHealthFragment>(EMassFragmentAccess::ReadWrite);
+	InQuery.AddRequirement<FMassHealthFragment>(EMassFragmentAccess::ReadWrite);
 }
 #endif // UE_REPLICATION_COMPILE_CLIENT_CODE
 
@@ -153,7 +153,7 @@ void TMassClientBubbleHealthHandler<AgentArrayItem>::AddRequirementsForSpawnQuer
 template<typename AgentArrayItem>
 void TMassClientBubbleHealthHandler<AgentArrayItem>::CacheFragmentViewsForSpawnQuery(FMassExecutionContext& InExecContext)
 {
-	HealthList = InExecContext.GetMutableFragmentView<FMSHealthFragment>();
+	HealthList = InExecContext.GetMutableFragmentView<FMassHealthFragment>();
 }
 #endif // UE_REPLICATION_COMPILE_CLIENT_CODE
 
@@ -161,7 +161,7 @@ void TMassClientBubbleHealthHandler<AgentArrayItem>::CacheFragmentViewsForSpawnQ
 template<typename AgentArrayItem>
 void TMassClientBubbleHealthHandler<AgentArrayItem>::ClearFragmentViewsForSpawnQuery()
 {
-	HealthList = TArrayView<FMSHealthFragment>();
+	HealthList = TArrayView<FMassHealthFragment>();
 }
 #endif // UE_REPLICATION_COMPILE_CLIENT_CODE
 
@@ -169,7 +169,7 @@ void TMassClientBubbleHealthHandler<AgentArrayItem>::ClearFragmentViewsForSpawnQ
 template<typename AgentArrayItem>
 void TMassClientBubbleHealthHandler<AgentArrayItem>::SetSpawnedEntityData(const int32 EntityIdx, const FReplicatedAgentHealthData& ReplicatedHealthData) const
 {
-	FMSHealthFragment& HealthFragment = HealthList[EntityIdx];
+	FMassHealthFragment& HealthFragment = HealthList[EntityIdx];
 
 	SetEntityData(HealthFragment, ReplicatedHealthData);
 }
@@ -179,7 +179,7 @@ void TMassClientBubbleHealthHandler<AgentArrayItem>::SetSpawnedEntityData(const 
 template<typename AgentArrayItem>
 void TMassClientBubbleHealthHandler<AgentArrayItem>::SetModifiedEntityData(const FMassEntityView& EntityView, const FReplicatedAgentHealthData& ReplicatedHealthData)
 {
-	FMSHealthFragment& HealthFragment = EntityView.GetFragmentData<FMSHealthFragment>();
+	FMassHealthFragment& HealthFragment = EntityView.GetFragmentData<FMassHealthFragment>();
 
 	SetEntityData(HealthFragment, ReplicatedHealthData);
 }
@@ -187,7 +187,7 @@ void TMassClientBubbleHealthHandler<AgentArrayItem>::SetModifiedEntityData(const
 
 #if UE_REPLICATION_COMPILE_CLIENT_CODE
 template<typename AgentArrayItem>
-void TMassClientBubbleHealthHandler<AgentArrayItem>::SetEntityData(FMSHealthFragment& HealthFragment, const FReplicatedAgentHealthData& ReplicatedHealthData)
+void TMassClientBubbleHealthHandler<AgentArrayItem>::SetEntityData(FMassHealthFragment& HealthFragment, const FReplicatedAgentHealthData& ReplicatedHealthData)
 {
 	HealthFragment.Health = ReplicatedHealthData.GetHealth();
 }
@@ -210,13 +210,13 @@ public:
 	template<typename AgentArrayItem>
 	void ModifyEntity(const FMassReplicatedAgentHandle Handle, const int32 EntityIdx, TMassClientBubbleHealthHandler<AgentArrayItem>& BubbleHealthHandler);
 
-	TArrayView<FMSHealthFragment> HealthList;
+	TArrayView<FMassHealthFragment> HealthList;
 };
 
 template<typename AgentArrayItem>
 void FMassReplicationProcessorHealthHandler::ModifyEntity(const FMassReplicatedAgentHandle Handle, const int32 EntityIdx, TMassClientBubbleHealthHandler<AgentArrayItem>& BubbleHealthHandler)
 {
-	const FMSHealthFragment& HealthFragment = HealthList[EntityIdx];
+	const FMassHealthFragment& HealthFragment = HealthList[EntityIdx];
 
 	BubbleHealthHandler.SetBubbleHealth(Handle, HealthFragment.Health);
 }

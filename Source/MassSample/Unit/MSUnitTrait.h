@@ -19,8 +19,7 @@ protected:
     virtual void BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const override
     {
         BuildContext.AddFragment<FTransformFragment>();
-        BuildContext.AddFragment<FMSHealthFragment>();
-        BuildContext.AddFragment<FMSTargetFragment>();
+        BuildContext.AddFragment<FMassHealthFragment>();
 
         // Fragments required by MassVisualizationTrait
         BuildContext.AddFragment<FMassActorFragment>();

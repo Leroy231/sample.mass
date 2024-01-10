@@ -78,17 +78,17 @@ void AMSUnitClientBubbleInfo::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 //----------------------------------------------------------------------//
 void FMassReplicationProcessorHealthHandler::AddRequirements(FMassEntityQuery& InQuery)
 {
-	InQuery.AddRequirement<FMSHealthFragment>(EMassFragmentAccess::ReadOnly);
+	InQuery.AddRequirement<FMassHealthFragment>(EMassFragmentAccess::ReadOnly);
 }
 
 void FMassReplicationProcessorHealthHandler::CacheFragmentViews(FMassExecutionContext& ExecContext)
 {
-	HealthList = ExecContext.GetMutableFragmentView<FMSHealthFragment>();
+	HealthList = ExecContext.GetMutableFragmentView<FMassHealthFragment>();
 }
 
 void FMassReplicationProcessorHealthHandler::AddEntity(const int32 EntityIdx, FReplicatedAgentHealthData& InOutReplicatedHealthData) const
 {
-	const FMSHealthFragment& HealthFragment = HealthList[EntityIdx];
+	const FMassHealthFragment& HealthFragment = HealthList[EntityIdx];
 
 	InOutReplicatedHealthData.SetHealth(HealthFragment.Health);
 }

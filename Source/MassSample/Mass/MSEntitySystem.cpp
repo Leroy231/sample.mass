@@ -41,11 +41,11 @@ void UMSEntitySystem::Spawn(UMassEntityConfigAsset* EntityConfig, const FTransfo
 	const FMassEntityTemplate& EntityTemplate = EntityConfig->GetOrCreateEntityTemplate(*GetWorld());
 
 	TArray<FMassEntityHandle> Entities;
-	auto CreationContext = EntityManager->BatchCreateEntities(EntityTemplate.GetArchetype(), EntityTemplate.GetSharedFragmentValues(), MSEntitySystem::Tweakables::SpawnCount, Entities);
-	TConstArrayView<FInstancedStruct> FragmentInstances = EntityTemplate.GetInitialFragmentValues();
+	const auto CreationContext = EntityManager->BatchCreateEntities(EntityTemplate.GetArchetype(), EntityTemplate.GetSharedFragmentValues(), MSEntitySystem::Tweakables::SpawnCount, Entities);
+	const TConstArrayView<FInstancedStruct> FragmentInstances = EntityTemplate.GetInitialFragmentValues();
 	EntityManager->BatchSetEntityFragmentsValues(CreationContext->GetEntityCollection(), FragmentInstances);
 
-	int SqrtCount = FMath::Sqrt((float)MSEntitySystem::Tweakables::SpawnCount);
+	const int SqrtCount = FMath::Sqrt(static_cast<float>(MSEntitySystem::Tweakables::SpawnCount));
 
 	int j = 0;
 	static constexpr float EntitySpacing = 1000.f;
@@ -83,7 +83,7 @@ void UMSEntitySystem::PostInitialize()
 
 	ReplicationSubsystem->RegisterBubbleInfoClass(AMSUnitClientBubbleInfo::StaticClass());
 
-	auto* SpawnerSubsystem = UWorld::GetSubsystem<UMassSpawnerSubsystem>(GetWorld());
+	const auto* SpawnerSubsystem = UWorld::GetSubsystem<UMassSpawnerSubsystem>(GetWorld());
 	check(SpawnerSubsystem);
 
 	if (UMSAssetManager::Get()->GameData)
@@ -93,9 +93,9 @@ void UMSEntitySystem::PostInitialize()
 	}
 }
 
-int32 UMSEntitySystem::GetHealthForActor(AActor* Actor)
+int32 UMSEntitySystem::GetHealthForActor(const AActor* Actor)
 {
-	if (FMSHealthFragment* HealthFragment = GetFragmentForActor<FMSHealthFragment>(Actor))
+	if (const FMassHealthFragment* HealthFragment = GetFragmentForActor<FMassHealthFragment>(Actor))
 	{
 		return HealthFragment->Health;
 	}

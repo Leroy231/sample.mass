@@ -43,7 +43,7 @@ public:
 	void Spawn(UMassEntityConfigAsset* EntityConfig, const FTransform& Transform);
 
 	UFUNCTION(BlueprintPure, Category = "MassSample")
-	static int32 GetHealthForActor(AActor* Actor);
+	static int32 GetHealthForActor(const AActor* Actor);
 
 protected:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;

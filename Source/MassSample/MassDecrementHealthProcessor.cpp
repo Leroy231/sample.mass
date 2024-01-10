@@ -10,7 +10,7 @@ UMassDecrementHealthProcessor::UMassDecrementHealthProcessor()
 
 void UMassDecrementHealthProcessor::ConfigureQueries()
 {
-	EntityQuery.AddRequirement<FMSHealthFragment>(EMassFragmentAccess::ReadWrite);
+	EntityQuery.AddRequirement<FMassHealthFragment>(EMassFragmentAccess::ReadWrite);
 }
 
 void UMassDecrementHealthProcessor::Execute(FMassEntityManager& EntityManager,
@@ -29,11 +29,11 @@ void UMassDecrementHealthProcessor::Execute(FMassEntityManager& EntityManager,
 	{
 		const int32 NumEntities = Context.GetNumEntities();
 
-		const TArrayView<FMSHealthFragment> HealthList = Context.GetMutableFragmentView<FMSHealthFragment>();
+		const TArrayView<FMassHealthFragment> HealthList = Context.GetMutableFragmentView<FMassHealthFragment>();
 
 		for (int32 EntityIndex = 0; EntityIndex < NumEntities; ++EntityIndex)
 		{
-			FMSHealthFragment& HealthFragment = HealthList[EntityIndex];
+			FMassHealthFragment& HealthFragment = HealthList[EntityIndex];
 			HealthFragment.Health -= 1;
 		}
 	});

@@ -20,7 +20,6 @@ namespace MS::StateTreeTask_Move::Tweakables
 
 bool FStateTreeTask_Move::Link(FStateTreeLinker& Linker)
 {
-    Linker.LinkExternalData(Location);
     Linker.LinkExternalData(VelocityHandle);
     Linker.LinkExternalData(MassSignalSubsystemHandle);
     return true;
