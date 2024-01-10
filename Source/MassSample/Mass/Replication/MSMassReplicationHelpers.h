@@ -319,7 +319,7 @@ protected:
 
 /** Class that handles replication and only runs on the server. It queries Mass entity fragments and sets those values when appropriate using the MassClientBubbleHandler. */
 UCLASS()
-class MASSSAMPLE_API UMSReplicator : public UMassReplicatorBase
+class MASSSAMPLE_API UMSUnitReplicator : public UMassReplicatorBase
 {
     GENERATED_BODY()
 

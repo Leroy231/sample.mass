@@ -94,15 +94,15 @@ void FMassReplicationProcessorHealthHandler::AddEntity(const int32 EntityIdx, FR
 }
 
 //----------------------------------------------------------------------//
-//  UMSReplicator
+//  UMSUnitReplicator
 //----------------------------------------------------------------------//
-void UMSReplicator::AddRequirements(FMassEntityQuery& EntityQuery)
+void UMSUnitReplicator::AddRequirements(FMassEntityQuery& EntityQuery)
 {
 	FMassReplicationProcessorPositionYawHandler::AddRequirements(EntityQuery);
 	FMassReplicationProcessorHealthHandler::AddRequirements(EntityQuery);
 }
 
-void UMSReplicator::ProcessClientReplication(FMassExecutionContext& Context, FMassReplicationContext& ReplicationContext)
+void UMSUnitReplicator::ProcessClientReplication(FMassExecutionContext& Context, FMassReplicationContext& ReplicationContext)
 {
 #if UE_REPLICATION_COMPILE_SERVER_CODE
 
