@@ -34,7 +34,7 @@ void UMassDecrementHealthProcessor::Execute(FMassEntityManager& EntityManager,
 		for (int32 EntityIndex = 0; EntityIndex < NumEntities; ++EntityIndex)
 		{
 			FMassHealthFragment& HealthFragment = HealthList[EntityIndex];
-			HealthFragment.Health -= 1;
+			HealthFragment.Value -= 1;
 		}
 	});
 }

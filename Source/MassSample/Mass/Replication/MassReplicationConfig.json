@@ -1,0 +1,24 @@
+{
+    "Entities": {
+        "MSUnit": {
+            "Fragments": [
+                "FMassHealthFragment"
+            ],
+            "AgentAdditionalReplicatedData": [
+                "PositionYaw"
+            ],
+            "ClientBubbleAdditionalHandlers": [
+                "Transform"
+            ]
+        }
+    },
+    "Fragments": {
+        "FMassHealthFragment": {
+            "Value": "int32"
+        }
+    },
+    "AdditionalIncludes": [
+        "MassSample/Unit/MSUnitFragments.h"
+    ],
+    "ModuleMacro": "MASSSAMPLE_API"
+}

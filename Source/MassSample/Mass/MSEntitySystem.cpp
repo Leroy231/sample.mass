@@ -8,7 +8,7 @@
 #include "MassSample/MSAssetManager.h"
 #include "MassSample/Data/MSGameData.h"
 #include "MassSample/Unit/MSUnitFragments.h"
-#include "Replication/MSMassReplicationHelpers.h"
+#include "Replication/MassReplicationHelpersGenerated.h"
 
 namespace MSEntitySystem::Tweakables
 {
@@ -97,7 +97,7 @@ int32 UMSEntitySystem::GetHealthForActor(const AActor* Actor)
 {
 	if (const FMassHealthFragment* HealthFragment = GetFragmentForActor<FMassHealthFragment>(Actor))
 	{
-		return HealthFragment->Health;
+		return HealthFragment->Value;
 	}
 
 	return -1;
