@@ -23,45 +23,41 @@ outl("""
 for entity in replication_config['Entities']:
 	fragments_short = [fragment[5:-8] for fragment in replication_config['Entities'][entity]['Fragments']]
 	handlers = replication_config['Entities'][entity]['ClientBubbleAdditionalHandlers'] + fragments_short
-	requirements = "\n".join(["\t\t%sHandler.AddRequirementsForSpawnQuery(InQuery);" % (handler) for handler in handlers])
-	cache_fragments = "\n".join(["\t\t%sHandler.CacheFragmentViewsForSpawnQuery(InExecContext);" % (handler) for handler in handlers])
-	spawn_data = "\n".join(["\t\t%sHandler.SetSpawnedEntityData(EntityIdx, ReplicatedEntity.GetReplicated%sData());" % (handler, replicated_data_getter(handler)) for handler in handlers])
-	clear_fragments = "\n".join(["\t%sHandler.ClearFragmentViewsForSpawnQuery();" % (handler) for handler in handlers])
 
-	template = Template("""
+	template = f"""
 #if UE_REPLICATION_COMPILE_CLIENT_CODE
-void F${entity}ClientBubbleHandler::PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize)
-{
+void F{entity}ClientBubbleHandler::PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize)
+{{
 	auto AddRequirementsForSpawnQuery = [this](FMassEntityQuery& InQuery)
-	{
-${requirements}
-	};
+	{{
+{"\n".join([f"\t\t{handler}Handler.AddRequirementsForSpawnQuery(InQuery);" for handler in handlers])}
+	}};
 
 	auto CacheFragmentViewsForSpawnQuery = [this](FMassExecutionContext& InExecContext)
-	{
-${cache_fragments}
-	};
+	{{
+{"\n".join([f"\t\t{handler}Handler.CacheFragmentViewsForSpawnQuery(InExecContext);" for handler in handlers])}
+	}};
 
-	auto SetSpawnedEntityData = [this](const FMassEntityView&, const FReplicated${entity}Agent& ReplicatedEntity, const int32 EntityIdx)
-	{
-${spawn_data}
-	};
+	auto SetSpawnedEntityData = [this](const FMassEntityView&, const FReplicated{entity}Agent& ReplicatedEntity, const int32 EntityIdx)
+	{{
+{"\n".join([f"\t\t{handler}Handler.SetSpawnedEntityData(EntityIdx, ReplicatedEntity.GetReplicated{replicated_data_getter(handler)}Data());" for handler in handlers])}
+	}};
 
-	auto SetModifiedEntityData = [this](const FMassEntityView& EntityView, const FReplicated${entity}Agent& Item)
-	{
+	auto SetModifiedEntityData = [this](const FMassEntityView& EntityView, const FReplicated{entity}Agent& Item)
+	{{
 		PostReplicatedChangeEntity(EntityView, Item);
-	};
+	}};
 
 	PostReplicatedAddHelper(AddedIndices, AddRequirementsForSpawnQuery, CacheFragmentViewsForSpawnQuery, SetSpawnedEntityData, SetModifiedEntityData);
 
-${clear_fragments}
-}
+{"\n".join([f"\t{handler}Handler.ClearFragmentViewsForSpawnQuery();" for handler in handlers])}
+}}
 #endif //UE_REPLICATION_COMPILE_SERVER_CODE
-	""")
+	"""
 
-	outl(template.substitute(entity=entity, requirements=requirements, cache_fragments=cache_fragments, spawn_data=spawn_data, clear_fragments=clear_fragments))
+	outl(template)
 
-	set_handler_data = "\n".join(["\t%sHandler.SetModifiedEntityData(EntityView, Item.GetReplicated%sData());" % (handler, replicated_data_getter(handler)) for handler in handlers])
+	set_handler_data = "\n".join([f"\t{handler}Handler.SetModifiedEntityData(EntityView, Item.GetReplicated{replicated_data_getter(handler)}Data());" for handler in handlers])
 
 	template = Template("""
 #if UE_REPLICATION_COMPILE_CLIENT_CODE
