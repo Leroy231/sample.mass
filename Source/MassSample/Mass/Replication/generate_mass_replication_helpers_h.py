@@ -279,28 +279,29 @@ void TMassClientBubble${fragment_short}Handler<AgentArrayItem>::SetEntityData(FM
 #endif // UE_REPLICATION_COMPILE_CLIENT_CODE
 	""", trimblanklines=True)
 
-	out("""
-
-class %s FMassReplicationProcessor%sHandler
+	template = Template("""
+class $module_macro FMassReplicationProcessor${fragment_short}Handler
 {
 public:
 	static void AddRequirements(FMassEntityQuery& InQuery);
 	void CacheFragmentViews(FMassExecutionContext& ExecContext);
-	void AddEntity(const int32 EntityIdx, FReplicatedAgent%sData& InOutReplicated%sData) const;
+	void AddEntity(const int32 EntityIdx, FReplicatedAgent${fragment_short}Data& InOutReplicated${fragment_short}Data) const;
 
 	template<typename AgentArrayItem>
-	void ModifyEntity(const FMassReplicatedAgentHandle Handle, const int32 EntityIdx, TMassClientBubble%sHandler<AgentArrayItem>& Bubble%sHandler);
+	void ModifyEntity(const FMassReplicatedAgentHandle Handle, const int32 EntityIdx, TMassClientBubble${fragment_short}Handler<AgentArrayItem>& Bubble${fragment_short}Handler);
 
-	TArrayView<FMass%sFragment> %sList;
+	TArrayView<FMass${fragment_short}Fragment> ${fragment_short}List;
 };
 
 template<typename AgentArrayItem>
-void FMassReplicationProcessor%sHandler::ModifyEntity(const FMassReplicatedAgentHandle Handle, const int32 EntityIdx, TMassClientBubble%sHandler<AgentArrayItem>& Bubble%sHandler)
+void FMassReplicationProcessor${fragment_short}Handler::ModifyEntity(const FMassReplicatedAgentHandle Handle, const int32 EntityIdx, TMassClientBubble${fragment_short}Handler<AgentArrayItem>& Bubble${fragment_short}Handler)
 {
-	const FMass%sFragment& %sFragment = %sList[EntityIdx];
-	Bubble%sHandler.SetBubbleData(Handle, %sFragment);
+	const FMass${fragment_short}Fragment& ${fragment_short}Fragment = ${fragment_short}List[EntityIdx];
+	Bubble${fragment_short}Handler.SetBubbleData(Handle, ${fragment_short}Fragment);
 }
-	""" % tuple([module_macro] + [fragment_short]*15), trimblanklines=True)
+""")
+
+	out(template.substitute(module_macro=module_macro, fragment_short=fragment_short))
 
 for entity in replication_config['Entities']:
 	out("""
