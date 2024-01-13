@@ -45,12 +45,12 @@ void FMSUnitClientBubbleHandler::PostReplicatedAdd(const TArrayView<int32> Added
 #if UE_REPLICATION_COMPILE_CLIENT_CODE
 void FMSUnitClientBubbleHandler::FMSUnitClientBubbleHandler::PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize)
 {
-    auto SetModifiedEntityData = [this](const FMassEntityView& EntityView, const FReplicatedMSUnitAgent& Item)
-    {
-        PostReplicatedChangeEntity(EntityView, Item);
-    };
+	auto SetModifiedEntityData = [this](const FMassEntityView& EntityView, const FReplicatedMSUnitAgent& Item)
+	{
+		PostReplicatedChangeEntity(EntityView, Item);
+	};
 
-    PostReplicatedChangeHelper(ChangedIndices, SetModifiedEntityData);
+	PostReplicatedChangeHelper(ChangedIndices, SetModifiedEntityData);
 }
 #endif //UE_REPLICATION_COMPILE_SERVER_CODE
 
@@ -63,20 +63,20 @@ void FMSUnitClientBubbleHandler::PostReplicatedChangeEntity(const FMassEntityVie
 #endif // UE_REPLICATION_COMPILE_CLIENT_CODE
 
 AMSUnitClientBubbleInfo::AMSUnitClientBubbleInfo(const FObjectInitializer& ObjectInitializer)
-    : Super(ObjectInitializer)
+	: Super(ObjectInitializer)
 {
-    Serializers.Add(&BubbleSerializer);
+	Serializers.Add(&BubbleSerializer);
 }
 
 void AMSUnitClientBubbleInfo::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-    FDoRepLifetimeParams SharedParams;
-    SharedParams.bIsPushBased = true;
+	FDoRepLifetimeParams SharedParams;
+	SharedParams.bIsPushBased = true;
 
-    // Technically, this doesn't need to be PushModel based because it's a FastArray and they ignore it.
-    DOREPLIFETIME_WITH_PARAMS_FAST(AMSUnitClientBubbleInfo, BubbleSerializer, SharedParams);
+	// Technically, this doesn't need to be PushModel based because it's a FastArray and they ignore it.
+	DOREPLIFETIME_WITH_PARAMS_FAST(AMSUnitClientBubbleInfo, BubbleSerializer, SharedParams);
 }
 	
 
