@@ -136,17 +136,17 @@ struct %s F%sFastArrayItem : public FMassFastArrayItemBase
 
 for fragment in replication_config['Fragments']:
 	fragment_short = fragment[5:-8]
-	out("""
+	template = Template("""
 template<typename AgentArrayItem>
-class TMassClientBubble%sHandler
+class TMassClientBubble${fragment_short}Handler
 {
 public:
-	TMassClientBubble%sHandler(TClientBubbleHandlerBase2<AgentArrayItem>& InOwnerHandler)
+	TMassClientBubble${fragment_short}Handler(TClientBubbleHandlerBase2<AgentArrayItem>& InOwnerHandler)
 		: OwnerHandler(InOwnerHandler)
 	{}
 
 #if UE_REPLICATION_COMPILE_SERVER_CODE
-	void SetBubbleData(const FMassReplicatedAgentHandle Handle, const FMass%sFragment& %sFragment);
+	void SetBubbleData(const FMassReplicatedAgentHandle Handle, const FMass${fragment_short}Fragment& ${fragment_short}Fragment);
 
 #endif // UE_REPLICATION_COMPILE_SERVER_CODE
 
@@ -155,22 +155,24 @@ public:
 	void CacheFragmentViewsForSpawnQuery(FMassExecutionContext& InExecContext);
 	void ClearFragmentViewsForSpawnQuery();
 
-	void SetSpawnedEntityData(const int32 EntityIdx, const FReplicatedAgent%sData& Replicated%sData) const;
+	void SetSpawnedEntityData(const int32 EntityIdx, const FReplicatedAgent${fragment_short}Data& Replicated${fragment_short}Data) const;
 
-	static void SetModifiedEntityData(const FMassEntityView& EntityView, const FReplicatedAgent%sData& Replicated%sData);
+	static void SetModifiedEntityData(const FMassEntityView& EntityView, const FReplicatedAgent${fragment_short}Data& Replicated${fragment_short}Data);
 #endif // UE_REPLICATION_COMPILE_CLIENT_CODE
 
 protected:
 #if UE_REPLICATION_COMPILE_CLIENT_CODE
-	static void SetEntityData(FMass%sFragment& %sFragment, const FReplicatedAgent%sData& Replicated%sData);
+	static void SetEntityData(FMass${fragment_short}Fragment& ${fragment_short}Fragment, const FReplicatedAgent${fragment_short}Data& Replicated${fragment_short}Data);
 #endif // UE_REPLICATION_COMPILE_CLIENT_CODE
 
 protected:
-	TArrayView<FMass%sFragment> %sList;
+	TArrayView<FMass${fragment_short}Fragment> ${fragment_short}List;
 
 	TClientBubbleHandlerBase2<AgentArrayItem>& OwnerHandler;
 };
-	""" % tuple([fragment_short]*14), trimblanklines=True)
+	""")
+
+	outl(template.substitute(fragment_short=fragment_short))
 
 	out("""
 #if UE_REPLICATION_COMPILE_SERVER_CODE

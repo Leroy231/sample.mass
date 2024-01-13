@@ -75,6 +75,7 @@ struct MASSSAMPLE_API FMSUnitFastArrayItem : public FMassFastArrayItemBase
 };
 
 class FMSUnitClientBubbleHandler;
+
 template<typename AgentArrayItem>
 class TMassClientBubbleHealthHandler
 {
@@ -108,6 +109,7 @@ protected:
 
 	TClientBubbleHandlerBase2<AgentArrayItem>& OwnerHandler;
 };
+	
 #if UE_REPLICATION_COMPILE_SERVER_CODE
 template<typename AgentArrayItem>
 void TMassClientBubbleHealthHandler<AgentArrayItem>::SetBubbleData(const FMassReplicatedAgentHandle Handle, const FMassHealthFragment& HealthFragment)
