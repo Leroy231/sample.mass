@@ -196,14 +196,16 @@ void TMassClientBubble${fragment_short}Handler<AgentArrayItem>::SetBubbleData(co
 
 	for property in replication_config['Fragments'][fragment]:
 		type = replication_config['Fragments'][fragment][property]
-		out("""
-	if (Replicated%s.Get%s() != %sFragment.%s)
+		template = Template("""
+	if (Replicated${fragment_short}.Get${property}() != ${fragment_short}Fragment.${property})
 	{
-		Replicated%s.Set%s(%sFragment.%s);
+		Replicated${fragment_short}.Set${property}(${fragment_short}Fragment.${property});
 		bMarkDirty = true;
 	}
-	""" % (fragment_short, property, fragment_short, property, fragment_short, property, fragment_short, property), trimblanklines=True)
+		""")
 
+		out(template.substitute(fragment_short=fragment_short, property=property), trimblanklines=True)
+		
 	out("""
 
 	if (bMarkDirty)
