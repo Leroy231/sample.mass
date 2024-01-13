@@ -30,3 +30,8 @@ def replicated_data_getter(handler):
 	return handler if handler != "Transform" else "PositionYaw"
 
 generated_file_header = "// THIS IS GENERATED CODE. DO NOT MODIFY.\n// REGENERATE WITH: python generate_mass_replication_helpers.py"
+
+type_defaults = {"int32": "0", "bool": "false", "float": "0.f", "double": "0.0"}
+
+def is_float(type):
+	return type == "float" or type == "double"

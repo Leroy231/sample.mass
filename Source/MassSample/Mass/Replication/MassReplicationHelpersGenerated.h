@@ -22,6 +22,9 @@ public:
 	template<typename T>
 	friend class TMassClientBubbleHealthHandler;
 
+	template<typename T>
+	friend class TMassClientBubbleLifetimeHandler;
+
 };
 
 USTRUCT()
@@ -43,6 +46,20 @@ private:
 };
 
 USTRUCT()
+struct MASSSAMPLE_API FReplicatedAgentLifetimeData
+{
+	GENERATED_BODY()
+
+	FReplicatedAgentLifetimeData() = default;
+
+	void SetValue(const float InValue) { Value = InValue; }
+	float GetValue() const { return Value; }
+private:
+	UPROPERTY(Transient)
+	float Value = 0.f;
+};
+
+USTRUCT()
 struct MASSSAMPLE_API FReplicatedMSUnitAgent : public FReplicatedAgentBase
 {
 	GENERATED_BODY()
@@ -52,12 +69,18 @@ struct MASSSAMPLE_API FReplicatedMSUnitAgent : public FReplicatedAgentBase
 
 	const FReplicatedAgentHealthData& GetReplicatedHealthData() const { return Health; }
 	FReplicatedAgentHealthData& GetReplicatedHealthDataMutable() { return Health; }
+
+	const FReplicatedAgentLifetimeData& GetReplicatedLifetimeData() const { return Lifetime; }
+	FReplicatedAgentLifetimeData& GetReplicatedLifetimeDataMutable() { return Lifetime; }
 private:
 	UPROPERTY()
 	FReplicatedAgentPositionYawData PositionYaw;
 
 	UPROPERTY()
 	FReplicatedAgentHealthData Health;
+
+	UPROPERTY()
+	FReplicatedAgentLifetimeData Lifetime;
 };
 
 USTRUCT()
@@ -220,12 +243,149 @@ void FMassReplicationProcessorHealthHandler::ModifyEntity(const FMassReplicatedA
 	BubbleHealthHandler.SetBubbleData(Handle, HealthFragment);
 }
 
+template<typename AgentArrayItem>
+class TMassClientBubbleLifetimeHandler
+{
+public:
+	TMassClientBubbleLifetimeHandler(TClientBubbleHandlerBase2<AgentArrayItem>& InOwnerHandler)
+		: OwnerHandler(InOwnerHandler)
+	{}
+
+#if UE_REPLICATION_COMPILE_SERVER_CODE
+	void SetBubbleData(const FMassReplicatedAgentHandle Handle, const FMassLifetimeFragment& LifetimeFragment);
+
+#endif // UE_REPLICATION_COMPILE_SERVER_CODE
+
+#if UE_REPLICATION_COMPILE_CLIENT_CODE
+	static void AddRequirementsForSpawnQuery(FMassEntityQuery& InQuery);
+	void CacheFragmentViewsForSpawnQuery(FMassExecutionContext& InExecContext);
+	void ClearFragmentViewsForSpawnQuery();
+
+	void SetSpawnedEntityData(const int32 EntityIdx, const FReplicatedAgentLifetimeData& ReplicatedLifetimeData) const;
+
+	static void SetModifiedEntityData(const FMassEntityView& EntityView, const FReplicatedAgentLifetimeData& ReplicatedLifetimeData);
+#endif // UE_REPLICATION_COMPILE_CLIENT_CODE
+
+protected:
+#if UE_REPLICATION_COMPILE_CLIENT_CODE
+	static void SetEntityData(FMassLifetimeFragment& LifetimeFragment, const FReplicatedAgentLifetimeData& ReplicatedLifetimeData);
+#endif // UE_REPLICATION_COMPILE_CLIENT_CODE
+
+protected:
+	TArrayView<FMassLifetimeFragment> LifetimeList;
+
+	TClientBubbleHandlerBase2<AgentArrayItem>& OwnerHandler;
+};
+	
+
+#if UE_REPLICATION_COMPILE_SERVER_CODE
+template<typename AgentArrayItem>
+void TMassClientBubbleLifetimeHandler<AgentArrayItem>::SetBubbleData(const FMassReplicatedAgentHandle Handle, const FMassLifetimeFragment& LifetimeFragment)
+{
+	check(OwnerHandler.AgentHandleManager.IsValidHandle(Handle));
+
+	const int32 AgentsIdx = OwnerHandler.AgentLookupArray[Handle.GetIndex()].AgentsIdx;
+	bool bMarkDirty = false;
+
+	AgentArrayItem& Item = (*OwnerHandler.Agents)[AgentsIdx];
+
+	checkf(Item.Agent.GetNetID().IsValid(), TEXT("Pos should not be updated on FCrowdFastArrayItem's that have an Invalid ID! First Add the Agent!"));
+
+	FReplicatedAgentLifetimeData& ReplicatedLifetime = Item.Agent.GetReplicatedLifetimeDataMutable();
+
+	if (FMath::Abs(ReplicatedLifetime.GetValue() - LifetimeFragment.Value) > 0.1f)
+	{
+		ReplicatedLifetime.SetValue(LifetimeFragment.Value);
+		bMarkDirty = true;
+	}
+
+	if (bMarkDirty)
+	{
+		OwnerHandler.Serializer->MarkItemDirty(Item);
+	}
+}
+#endif //UE_REPLICATION_COMPILE_SERVER_CODE
+
+#if UE_REPLICATION_COMPILE_CLIENT_CODE
+template<typename AgentArrayItem>
+void TMassClientBubbleLifetimeHandler<AgentArrayItem>::AddRequirementsForSpawnQuery(FMassEntityQuery& InQuery)
+{
+	InQuery.AddRequirement<FMassLifetimeFragment>(EMassFragmentAccess::ReadWrite);
+}
+#endif // UE_REPLICATION_COMPILE_CLIENT_CODE
+
+#if UE_REPLICATION_COMPILE_CLIENT_CODE
+template<typename AgentArrayItem>
+void TMassClientBubbleLifetimeHandler<AgentArrayItem>::CacheFragmentViewsForSpawnQuery(FMassExecutionContext& InExecContext)
+{
+	LifetimeList = InExecContext.GetMutableFragmentView<FMassLifetimeFragment>();
+}
+#endif // UE_REPLICATION_COMPILE_CLIENT_CODE
+
+#if UE_REPLICATION_COMPILE_CLIENT_CODE
+template<typename AgentArrayItem>
+void TMassClientBubbleLifetimeHandler<AgentArrayItem>::ClearFragmentViewsForSpawnQuery()
+{
+	LifetimeList = TArrayView<FMassLifetimeFragment>();
+}
+#endif // UE_REPLICATION_COMPILE_CLIENT_CODE
+
+#if UE_REPLICATION_COMPILE_CLIENT_CODE
+template<typename AgentArrayItem>
+void TMassClientBubbleLifetimeHandler<AgentArrayItem>::SetSpawnedEntityData(const int32 EntityIdx, const FReplicatedAgentLifetimeData& ReplicatedLifetimeData) const
+{
+	FMassLifetimeFragment& LifetimeFragment = LifetimeList[EntityIdx];
+
+	SetEntityData(LifetimeFragment, ReplicatedLifetimeData);
+}
+#endif // UE_REPLICATION_COMPILE_CLIENT_CODE
+
+#if UE_REPLICATION_COMPILE_CLIENT_CODE
+template<typename AgentArrayItem>
+void TMassClientBubbleLifetimeHandler<AgentArrayItem>::SetModifiedEntityData(const FMassEntityView& EntityView, const FReplicatedAgentLifetimeData& ReplicatedLifetimeData)
+{
+	FMassLifetimeFragment& LifetimeFragment = EntityView.GetFragmentData<FMassLifetimeFragment>();
+
+	SetEntityData(LifetimeFragment, ReplicatedLifetimeData);
+}
+#endif // UE_REPLICATION_COMPILE_CLIENT_CODE
+
+#if UE_REPLICATION_COMPILE_CLIENT_CODE
+template<typename AgentArrayItem>
+void TMassClientBubbleLifetimeHandler<AgentArrayItem>::SetEntityData(FMassLifetimeFragment& LifetimeFragment, const FReplicatedAgentLifetimeData& ReplicatedLifetimeData)
+{
+	LifetimeFragment.Value = ReplicatedLifetimeData.GetValue();
+}
+#endif // UE_REPLICATION_COMPILE_CLIENT_CODE
+
+class MASSSAMPLE_API FMassReplicationProcessorLifetimeHandler
+{
+public:
+	static void AddRequirements(FMassEntityQuery& InQuery);
+	void CacheFragmentViews(FMassExecutionContext& ExecContext);
+	void AddEntity(const int32 EntityIdx, FReplicatedAgentLifetimeData& InOutReplicatedLifetimeData) const;
+
+	template<typename AgentArrayItem>
+	void ModifyEntity(const FMassReplicatedAgentHandle Handle, const int32 EntityIdx, TMassClientBubbleLifetimeHandler<AgentArrayItem>& BubbleLifetimeHandler);
+
+	TArrayView<FMassLifetimeFragment> LifetimeList;
+};
+
+template<typename AgentArrayItem>
+void FMassReplicationProcessorLifetimeHandler::ModifyEntity(const FMassReplicatedAgentHandle Handle, const int32 EntityIdx, TMassClientBubbleLifetimeHandler<AgentArrayItem>& BubbleLifetimeHandler)
+{
+	const FMassLifetimeFragment& LifetimeFragment = LifetimeList[EntityIdx];
+	BubbleLifetimeHandler.SetBubbleData(Handle, LifetimeFragment);
+}
+
 class MASSSAMPLE_API FMSUnitClientBubbleHandler : public TClientBubbleHandlerBase2<FMSUnitFastArrayItem>
 {
 	template<typename T>
 	friend class TMassClientBubbleTransformHandler;
 	template<typename T>
 	friend class TMassClientBubbleHealthHandler;
+	template<typename T>
+	friend class TMassClientBubbleLifetimeHandler;
 public:
 	typedef TClientBubbleHandlerBase2<FMSUnitFastArrayItem> Super;
 
@@ -233,8 +393,10 @@ public:
 
 	typedef TMassClientBubbleHealthHandler<FMSUnitFastArrayItem> FMassClientBubbleHealthHandler;
 
+	typedef TMassClientBubbleLifetimeHandler<FMSUnitFastArrayItem> FMassClientBubbleLifetimeHandler;
+
 	FMSUnitClientBubbleHandler()
-		: TransformHandler(*this), HealthHandler(*this)
+		: TransformHandler(*this), HealthHandler(*this), LifetimeHandler(*this)
 	{}
 
 #if UE_REPLICATION_COMPILE_SERVER_CODE
@@ -244,6 +406,9 @@ public:
 
 	const FMassClientBubbleHealthHandler& GetHealthHandler() const { return HealthHandler; }
 	FMassClientBubbleHealthHandler& GetHealthHandlerMutable() { return HealthHandler; }
+
+	const FMassClientBubbleLifetimeHandler& GetLifetimeHandler() const { return LifetimeHandler; }
+	FMassClientBubbleLifetimeHandler& GetLifetimeHandlerMutable() { return LifetimeHandler; }
 
 
 #endif // UE_REPLICATION_COMPILE_SERVER_CODE
@@ -258,6 +423,7 @@ protected:
 	
 	FMassClientBubbleTransformHandler TransformHandler;
 	FMassClientBubbleHealthHandler HealthHandler;
+	FMassClientBubbleLifetimeHandler LifetimeHandler;
 };
 
 

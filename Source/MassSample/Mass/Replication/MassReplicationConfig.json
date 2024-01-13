@@ -2,7 +2,8 @@
     "Entities": {
         "MSUnit": {
             "Fragments": [
-                "FMassHealthFragment"
+                "FMassHealthFragment",
+                "FMassLifetimeFragment"
             ],
             "AgentAdditionalReplicatedData": [
                 "PositionYaw"
@@ -14,8 +15,14 @@
     },
     "Fragments": {
         "FMassHealthFragment": {
-            "Value": "int32",
-            "bIsBleeding": "bool"
+            "Value": {"Type": "int32"},
+            "bIsBleeding": {"Type": "bool"}
+        },
+        "FMassLifetimeFragment": {
+            "Value": {
+                "Type": "float",
+                "ReplicationTolerance": "0.1f"
+            }
         }
     },
     "AdditionalIncludes": [

@@ -19,7 +19,6 @@ outl(f"""{generated_file_header}
 """)
 
 replication_config = json.load(open(os.path.join(script_dir, 'MassReplicationConfig.json')))
-type_defaults = {"int32": "0", "bool": "false"}
 module_macro = replication_config['ModuleMacro']
 
 for include in replication_config['AdditionalIncludes']:
@@ -55,7 +54,7 @@ struct %s FReplicatedAgent%sData
 	""" % (module_macro, fragment_short, fragment_short), trimblanklines=True)
 
 	for property in replication_config['Fragments'][fragment]:
-		type = replication_config['Fragments'][fragment][property]
+		type = replication_config['Fragments'][fragment][property]['Type']
 		out("""
 	void Set%s(const %s In%s) { %s = In%s; }
 	%s Get%s() const { return %s; }
@@ -64,7 +63,7 @@ struct %s FReplicatedAgent%sData
 	outl("private:")
 
 	for property in replication_config['Fragments'][fragment]:
-		type = replication_config['Fragments'][fragment][property]
+		type = replication_config['Fragments'][fragment][property]['Type']
 		out("""
 	UPROPERTY(Transient)
 	%s %s = %s;
@@ -197,17 +196,18 @@ void TMassClientBubble${fragment_short}Handler<AgentArrayItem>::SetBubbleData(co
 	out(template.substitute(fragment_short=fragment_short))
 
 	for property in replication_config['Fragments'][fragment]:
-		type = replication_config['Fragments'][fragment][property]
-		template = Template("""
-	if (Replicated${fragment_short}.Get${property}() != ${fragment_short}Fragment.${property})
-	{
-		Replicated${fragment_short}.Set${property}(${fragment_short}Fragment.${property});
+		type = replication_config['Fragments'][fragment][property]['Type']
+		not_equal_condition = f"Replicated{fragment_short}.Get{property}() != {fragment_short}Fragment.{property}" if not is_float(type) else f"FMath::Abs(Replicated{fragment_short}.Get{property}() - {fragment_short}Fragment.{property}) > {replication_config['Fragments'][fragment][property]['ReplicationTolerance']}"
+		template = f"""
+	if ({not_equal_condition})
+	{{
+		Replicated{fragment_short}.Set{property}({fragment_short}Fragment.{property});
 		bMarkDirty = true;
-	}
-		""")
+	}}
+		"""
 
-		out(template.substitute(fragment_short=fragment_short, property=property), trimblanklines=True)
-		
+		out(template, trimblanklines=True)
+
 	out("""
 
 	if (bMarkDirty)

@@ -42,7 +42,7 @@ void UMassDecrementHealthProcessor::Execute(FMassEntityManager& EntityManager,
 			HealthFragment.Value -= 1;
 			HealthFragment.bIsBleeding = !HealthFragment.bIsBleeding;
 
-			LifetimeFragment.Value += 1.f;
+			LifetimeFragment.Value += 0.05f;
 		}
 	});
 }

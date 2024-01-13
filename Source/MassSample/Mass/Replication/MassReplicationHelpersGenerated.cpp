@@ -15,18 +15,21 @@ void FMSUnitClientBubbleHandler::PostReplicatedAdd(const TArrayView<int32> Added
 	{
 		TransformHandler.AddRequirementsForSpawnQuery(InQuery);
 		HealthHandler.AddRequirementsForSpawnQuery(InQuery);
+		LifetimeHandler.AddRequirementsForSpawnQuery(InQuery);
 	};
 
 	auto CacheFragmentViewsForSpawnQuery = [this](FMassExecutionContext& InExecContext)
 	{
 		TransformHandler.CacheFragmentViewsForSpawnQuery(InExecContext);
 		HealthHandler.CacheFragmentViewsForSpawnQuery(InExecContext);
+		LifetimeHandler.CacheFragmentViewsForSpawnQuery(InExecContext);
 	};
 
 	auto SetSpawnedEntityData = [this](const FMassEntityView&, const FReplicatedMSUnitAgent& ReplicatedEntity, const int32 EntityIdx)
 	{
 		TransformHandler.SetSpawnedEntityData(EntityIdx, ReplicatedEntity.GetReplicatedPositionYawData());
 		HealthHandler.SetSpawnedEntityData(EntityIdx, ReplicatedEntity.GetReplicatedHealthData());
+		LifetimeHandler.SetSpawnedEntityData(EntityIdx, ReplicatedEntity.GetReplicatedLifetimeData());
 	};
 
 	auto SetModifiedEntityData = [this](const FMassEntityView& EntityView, const FReplicatedMSUnitAgent& Item)
@@ -38,6 +41,7 @@ void FMSUnitClientBubbleHandler::PostReplicatedAdd(const TArrayView<int32> Added
 
 	TransformHandler.ClearFragmentViewsForSpawnQuery();
 	HealthHandler.ClearFragmentViewsForSpawnQuery();
+	LifetimeHandler.ClearFragmentViewsForSpawnQuery();
 }
 #endif //UE_REPLICATION_COMPILE_SERVER_CODE
 	
@@ -59,6 +63,7 @@ void FMSUnitClientBubbleHandler::PostReplicatedChangeEntity(const FMassEntityVie
 {
 	TransformHandler.SetModifiedEntityData(EntityView, Item.GetReplicatedPositionYawData());
 	HealthHandler.SetModifiedEntityData(EntityView, Item.GetReplicatedHealthData());
+	LifetimeHandler.SetModifiedEntityData(EntityView, Item.GetReplicatedLifetimeData());
 }
 #endif // UE_REPLICATION_COMPILE_CLIENT_CODE
 
@@ -84,6 +89,7 @@ void UMSUnitReplicator::AddRequirements(FMassEntityQuery& EntityQuery)
 {
 	FMassReplicationProcessorPositionYawHandler::AddRequirements(EntityQuery);
 	FMassReplicationProcessorHealthHandler::AddRequirements(EntityQuery);
+	FMassReplicationProcessorLifetimeHandler::AddRequirements(EntityQuery);
 }
 
 void UMSUnitReplicator::ProcessClientReplication(FMassExecutionContext& Context, FMassReplicationContext& ReplicationContext)
@@ -92,27 +98,30 @@ void UMSUnitReplicator::ProcessClientReplication(FMassExecutionContext& Context,
 
 	FMassReplicationProcessorPositionYawHandler PositionYawHandler;
 	FMassReplicationProcessorHealthHandler HealthHandler;
+	FMassReplicationProcessorLifetimeHandler LifetimeHandler;
 	FMassReplicationSharedFragment* RepSharedFrag = nullptr;
 
-	auto CacheViewsCallback = [&RepSharedFrag, &PositionYawHandler, &HealthHandler](FMassExecutionContext& Context)
+	auto CacheViewsCallback = [&RepSharedFrag, &PositionYawHandler, &HealthHandler, &LifetimeHandler](FMassExecutionContext& Context)
 	{
 		PositionYawHandler.CacheFragmentViews(Context);
 		HealthHandler.CacheFragmentViews(Context);
+		LifetimeHandler.CacheFragmentViews(Context);
 		RepSharedFrag = &Context.GetMutableSharedFragment<FMassReplicationSharedFragment>();
 		check(RepSharedFrag);
 	};
 
-	auto AddEntityCallback = [&RepSharedFrag, &PositionYawHandler, &HealthHandler](FMassExecutionContext& Context, const int32 EntityIdx, FReplicatedMSUnitAgent& InReplicatedAgent, const FMassClientHandle ClientHandle) -> FMassReplicatedAgentHandle
+	auto AddEntityCallback = [&RepSharedFrag, &PositionYawHandler, &HealthHandler, &LifetimeHandler](FMassExecutionContext& Context, const int32 EntityIdx, FReplicatedMSUnitAgent& InReplicatedAgent, const FMassClientHandle ClientHandle) -> FMassReplicatedAgentHandle
 	{
 		AMSUnitClientBubbleInfo& UnitBubbleInfo = RepSharedFrag->GetTypedClientBubbleInfoChecked<AMSUnitClientBubbleInfo>(ClientHandle);
 
 		PositionYawHandler.AddEntity(EntityIdx, InReplicatedAgent.GetReplicatedPositionYawDataMutable());
 		HealthHandler.AddEntity(EntityIdx, InReplicatedAgent.GetReplicatedHealthDataMutable());
+		LifetimeHandler.AddEntity(EntityIdx, InReplicatedAgent.GetReplicatedLifetimeDataMutable());
 
 		return UnitBubbleInfo.GetBubbleSerializer().Bubble.AddAgent(Context.GetEntity(EntityIdx), InReplicatedAgent);
 	};
 
-	auto ModifyEntityCallback = [&RepSharedFrag, &PositionYawHandler, &HealthHandler](FMassExecutionContext&, const int32 EntityIdx, const EMassLOD::Type, const double, const FMassReplicatedAgentHandle Handle, const FMassClientHandle ClientHandle)
+	auto ModifyEntityCallback = [&RepSharedFrag, &PositionYawHandler, &HealthHandler, &LifetimeHandler](FMassExecutionContext&, const int32 EntityIdx, const EMassLOD::Type, const double, const FMassReplicatedAgentHandle Handle, const FMassClientHandle ClientHandle)
 	{
 		AMSUnitClientBubbleInfo& UnitBubbleInfo = RepSharedFrag->GetTypedClientBubbleInfoChecked<AMSUnitClientBubbleInfo>(ClientHandle);
 
@@ -120,6 +129,7 @@ void UMSUnitReplicator::ProcessClientReplication(FMassExecutionContext& Context,
 
 		PositionYawHandler.ModifyEntity<FMSUnitFastArrayItem>(Handle, EntityIdx, Bubble.GetTransformHandlerMutable());
 		HealthHandler.ModifyEntity<FMSUnitFastArrayItem>(Handle, EntityIdx, Bubble.GetHealthHandlerMutable());
+		LifetimeHandler.ModifyEntity<FMSUnitFastArrayItem>(Handle, EntityIdx, Bubble.GetLifetimeHandlerMutable());
 	};
 
 	auto RemoveEntityCallback = [&RepSharedFrag](FMassExecutionContext&, const FMassReplicatedAgentHandle Handle, const FMassClientHandle ClientHandle)
@@ -150,6 +160,24 @@ void FMassReplicationProcessorHealthHandler::AddEntity(const int32 EntityIdx, FR
 
 	InOutReplicatedHealthData.SetValue(HealthFragment.Value);
 	InOutReplicatedHealthData.SetbIsBleeding(HealthFragment.bIsBleeding);
+}
+	
+
+void FMassReplicationProcessorLifetimeHandler::AddRequirements(FMassEntityQuery& InQuery)
+{
+	InQuery.AddRequirement<FMassLifetimeFragment>(EMassFragmentAccess::ReadOnly);
+}
+
+void FMassReplicationProcessorLifetimeHandler::CacheFragmentViews(FMassExecutionContext& ExecContext)
+{
+	LifetimeList = ExecContext.GetMutableFragmentView<FMassLifetimeFragment>();
+}
+
+void FMassReplicationProcessorLifetimeHandler::AddEntity(const int32 EntityIdx, FReplicatedAgentLifetimeData& InOutReplicatedLifetimeData) const
+{
+	const FMassLifetimeFragment& LifetimeFragment = LifetimeList[EntityIdx];
+
+	InOutReplicatedLifetimeData.SetValue(LifetimeFragment.Value);
 }
 	
 
