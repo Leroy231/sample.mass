@@ -24,36 +24,38 @@ for entity in replication_config['Entities']:
 	spawn_data = "\n".join(["\t\t%sHandler.SetSpawnedEntityData(EntityIdx, ReplicatedEntity.GetReplicated%sData());" % (handler, replicated_data_getter(handler)) for handler in handlers])
 	clear_fragments = "\n".join(["\t%sHandler.ClearFragmentViewsForSpawnQuery();" % (handler) for handler in handlers])
 
-	outl("""
+	template = Template("""
 #if UE_REPLICATION_COMPILE_CLIENT_CODE
-void F%sClientBubbleHandler::PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize)
+void F${entity}ClientBubbleHandler::PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize)
 {
 	auto AddRequirementsForSpawnQuery = [this](FMassEntityQuery& InQuery)
 	{
-%s
+${requirements}
 	};
 
 	auto CacheFragmentViewsForSpawnQuery = [this](FMassExecutionContext& InExecContext)
 	{
-%s
+${cache_fragments}
 	};
 
-	auto SetSpawnedEntityData = [this](const FMassEntityView&, const FReplicated%sAgent& ReplicatedEntity, const int32 EntityIdx)
+	auto SetSpawnedEntityData = [this](const FMassEntityView&, const FReplicated${entity}Agent& ReplicatedEntity, const int32 EntityIdx)
 	{
-%s
+${spawn_data}
 	};
 
-	auto SetModifiedEntityData = [this](const FMassEntityView& EntityView, const FReplicated%sAgent& Item)
+	auto SetModifiedEntityData = [this](const FMassEntityView& EntityView, const FReplicated${entity}Agent& Item)
 	{
 		PostReplicatedChangeEntity(EntityView, Item);
 	};
 
 	PostReplicatedAddHelper(AddedIndices, AddRequirementsForSpawnQuery, CacheFragmentViewsForSpawnQuery, SetSpawnedEntityData, SetModifiedEntityData);
 
-%s
+${clear_fragments}
 }
 #endif //UE_REPLICATION_COMPILE_SERVER_CODE
-	""" % (entity, requirements, cache_fragments, entity, spawn_data, entity, clear_fragments))
+	""")
+
+	outl(template.substitute(entity=entity, requirements=requirements, cache_fragments=cache_fragments, spawn_data=spawn_data, clear_fragments=clear_fragments))
 
 	set_handler_data = "\n".join(["\t%sHandler.SetModifiedEntityData(EntityView, Item.GetReplicated%sData());" % (handler, replicated_data_getter(handler)) for handler in handlers])
 
@@ -180,3 +182,4 @@ void FMassReplicationProcessor%sHandler::AddEntity(const int32 EntityIdx, FRepli
 }
 	""" % (fragment_short, fragment_short, fragment_short, fragment_short, fragment_short, fragment_short, fragment_short, fragment_short, fragment_short, fragment_short, fragment_short, set_values))
 
+write_to_file("MassReplicationHelpersGenerated.cpp")

@@ -14,7 +14,8 @@
     },
     "Fragments": {
         "FMassHealthFragment": {
-            "Value": "int32"
+            "Value": "int32",
+            "bIsBleeding": "bool"
         }
     },
     "AdditionalIncludes": [

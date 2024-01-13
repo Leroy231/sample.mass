@@ -149,5 +149,6 @@ void FMassReplicationProcessorHealthHandler::AddEntity(const int32 EntityIdx, FR
 	const FMassHealthFragment& HealthFragment = HealthList[EntityIdx];
 
 	InOutReplicatedHealthData.SetValue(HealthFragment.Value);
+	InOutReplicatedHealthData.SetbIsBleeding(HealthFragment.bIsBleeding);
 }
 	

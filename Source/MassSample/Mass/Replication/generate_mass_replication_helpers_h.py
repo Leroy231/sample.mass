@@ -13,7 +13,7 @@ outl("""#pragma once
 """)
 
 replication_config = json.load(open('MassReplicationConfig.json'))
-type_defaults = {"int32": "0"}
+type_defaults = {"int32": "0", "bool": "false"}
 module_macro = replication_config['ModuleMacro']
 
 for include in replication_config['AdditionalIncludes']:
@@ -427,3 +427,5 @@ public:
 		entity = entity,
 		module_macro = module_macro,
 	))
+
+write_to_file("MassReplicationHelpersGenerated.h")

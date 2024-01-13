@@ -30,9 +30,13 @@ struct MASSSAMPLE_API FReplicatedAgentHealthData
 
 	void SetValue(const int32 InValue) { Value = InValue; }
 	int32 GetValue() const { return Value; }
+	void SetbIsBleeding(const bool InbIsBleeding) { bIsBleeding = InbIsBleeding; }
+	bool GetbIsBleeding() const { return bIsBleeding; }
 private:
 	UPROPERTY(Transient)
 	int32 Value = 0;
+	UPROPERTY(Transient)
+	bool bIsBleeding = false;
 };
 
 USTRUCT()
@@ -124,6 +128,11 @@ void TMassClientBubbleHealthHandler<AgentArrayItem>::SetBubbleData(const FMassRe
 		ReplicatedHealth.SetValue(HealthFragment.Value);
 		bMarkDirty = true;
 	}
+	if (ReplicatedHealth.GetbIsBleeding() != HealthFragment.bIsBleeding)
+	{
+		ReplicatedHealth.SetbIsBleeding(HealthFragment.bIsBleeding);
+		bMarkDirty = true;
+	}
 
 	if (bMarkDirty)
 	{
@@ -181,6 +190,7 @@ template<typename AgentArrayItem>
 void TMassClientBubbleHealthHandler<AgentArrayItem>::SetEntityData(FMassHealthFragment& HealthFragment, const FReplicatedAgentHealthData& ReplicatedHealthData)
 {
 	HealthFragment.Value = ReplicatedHealthData.GetValue();
+	HealthFragment.bIsBleeding = ReplicatedHealthData.GetbIsBleeding();
 }
 #endif // UE_REPLICATION_COMPILE_CLIENT_CODE
 
