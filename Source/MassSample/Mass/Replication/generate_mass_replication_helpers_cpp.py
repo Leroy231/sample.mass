@@ -169,24 +169,26 @@ for fragment in replication_config['Fragments']:
 	properties = list(replication_config['Fragments'][fragment].keys())
 	set_values = "\n".join(["\tInOutReplicated%sData.Set%s(%sFragment.%s);" % (fragment_short, property, fragment_short, property) for property in properties])
 
-	outl("""
-void FMassReplicationProcessor%sHandler::AddRequirements(FMassEntityQuery& InQuery)
+	template = Template("""
+void FMassReplicationProcessor${fragment_short}Handler::AddRequirements(FMassEntityQuery& InQuery)
 {
-	InQuery.AddRequirement<FMass%sFragment>(EMassFragmentAccess::ReadOnly);
+	InQuery.AddRequirement<FMass${fragment_short}Fragment>(EMassFragmentAccess::ReadOnly);
 }
 
-void FMassReplicationProcessor%sHandler::CacheFragmentViews(FMassExecutionContext& ExecContext)
+void FMassReplicationProcessor${fragment_short}Handler::CacheFragmentViews(FMassExecutionContext& ExecContext)
 {
-	%sList = ExecContext.GetMutableFragmentView<FMass%sFragment>();
+	${fragment_short}List = ExecContext.GetMutableFragmentView<FMass${fragment_short}Fragment>();
 }
 
-void FMassReplicationProcessor%sHandler::AddEntity(const int32 EntityIdx, FReplicatedAgent%sData& InOutReplicated%sData) const
+void FMassReplicationProcessor${fragment_short}Handler::AddEntity(const int32 EntityIdx, FReplicatedAgent${fragment_short}Data& InOutReplicated${fragment_short}Data) const
 {
-	const FMass%sFragment& %sFragment = %sList[EntityIdx];
+	const FMass${fragment_short}Fragment& ${fragment_short}Fragment = ${fragment_short}List[EntityIdx];
 
-%s
+${set_values}
 }
-	""" % (fragment_short, fragment_short, fragment_short, fragment_short, fragment_short, fragment_short, fragment_short, fragment_short, fragment_short, fragment_short, fragment_short, set_values))
+	""")
+
+	outl(template.substitute(fragment_short=fragment_short, set_values=set_values))
 
 template = Template("""
 void UMassReplicationBubbleRegistrationSubsystem::PostInitialize()
