@@ -174,10 +174,10 @@ protected:
 
 	outl(template.substitute(fragment_short=fragment_short))
 
-	out("""
+	template = Template("""
 #if UE_REPLICATION_COMPILE_SERVER_CODE
 template<typename AgentArrayItem>
-void TMassClientBubble%sHandler<AgentArrayItem>::SetBubbleData(const FMassReplicatedAgentHandle Handle, const FMass%sFragment& %sFragment)
+void TMassClientBubble${fragment_short}Handler<AgentArrayItem>::SetBubbleData(const FMassReplicatedAgentHandle Handle, const FMass${fragment_short}Fragment& ${fragment_short}Fragment)
 {
 	check(OwnerHandler.AgentHandleManager.IsValidHandle(Handle));
 
@@ -188,9 +188,11 @@ void TMassClientBubble%sHandler<AgentArrayItem>::SetBubbleData(const FMassReplic
 
 	checkf(Item.Agent.GetNetID().IsValid(), TEXT("Pos should not be updated on FCrowdFastArrayItem's that have an Invalid ID! First Add the Agent!"));
 
-	FReplicatedAgent%sData& Replicated%s = Item.Agent.GetReplicated%sDataMutable();
+	FReplicatedAgent${fragment_short}Data& Replicated${fragment_short} = Item.Agent.GetReplicated${fragment_short}DataMutable();
 
-	""" % tuple([fragment_short]*6), trimblanklines=True)
+""")
+
+	out(template.substitute(fragment_short=fragment_short))
 
 	for property in replication_config['Fragments'][fragment]:
 		type = replication_config['Fragments'][fragment][property]
