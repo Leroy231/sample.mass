@@ -6,7 +6,9 @@ import os
 script_path = os.path.abspath(__file__)
 script_dir = os.path.dirname(script_path)
 
-outl("""#pragma once
+outl(f"""{generated_file_header}
+
+#pragma once
 
 #include "MassReplicationTypes.h"
 #include "MassClientBubbleHandler.h"

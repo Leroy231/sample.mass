@@ -28,3 +28,5 @@ def write_to_file(filename):
 # UE has an inconsistent naming where FTransformFragment is stored in FReplicatedAgentPositionYawData.
 def replicated_data_getter(handler):
 	return handler if handler != "Transform" else "PositionYaw"
+
+generated_file_header = "// THIS IS GENERATED CODE. DO NOT MODIFY.\n// REGENERATE WITH: python generate_mass_replication_helpers.py"

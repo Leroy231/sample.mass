@@ -1,5 +1,5 @@
-
 // THIS IS GENERATED CODE. DO NOT MODIFY.
+// REGENERATE WITH: python generate_mass_replication_helpers.py
 
 #include "MassReplicationHelpersGenerated.h"
 

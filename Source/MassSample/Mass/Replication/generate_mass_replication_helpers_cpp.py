@@ -10,8 +10,7 @@ script_dir = os.path.dirname(script_path)
 
 replication_config = json.load(open(os.path.join(script_dir, 'MassReplicationConfig.json')))
 
-outl("""
-// THIS IS GENERATED CODE. DO NOT MODIFY.
+outl(f"""{generated_file_header}
 
 #include "MassReplicationHelpersGenerated.h"
 
