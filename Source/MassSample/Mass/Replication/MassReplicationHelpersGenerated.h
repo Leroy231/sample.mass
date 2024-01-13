@@ -221,7 +221,7 @@ class MASSSAMPLE_API FMSUnitClientBubbleHandler : public TClientBubbleHandlerBas
 	template<typename T>
 	friend class TMassClientBubbleHealthHandler;
 public:
-    typedef TClientBubbleHandlerBase2<FMSUnitFastArrayItem> Super;
+	typedef TClientBubbleHandlerBase2<FMSUnitFastArrayItem> Super;
 
 	typedef TMassClientBubbleTransformHandler<FMSUnitFastArrayItem> FMassClientBubbleTransformHandler;
 

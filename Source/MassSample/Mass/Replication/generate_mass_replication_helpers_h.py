@@ -317,7 +317,7 @@ class %s F%sClientBubbleHandler : public TClientBubbleHandlerBase2<F%sFastArrayI
 
 	outl("""
 public:
-    typedef TClientBubbleHandlerBase2<F%sFastArrayItem> Super;
+	typedef TClientBubbleHandlerBase2<F%sFastArrayItem> Super;
 	""" % (entity), trimblanklines=True)
 
 	fragments_short = [fragment[5:-8] for fragment in replication_config['Entities'][entity]['Fragments']]
