@@ -20,6 +20,7 @@ protected:
     {
         BuildContext.AddFragment<FTransformFragment>();
         BuildContext.AddFragment<FMassHealthFragment>();
+        BuildContext.AddFragment<FMassLifetimeFragment>();
 
         // Fragments required by MassVisualizationTrait
         BuildContext.AddFragment<FMassActorFragment>();

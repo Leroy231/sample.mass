@@ -48,6 +48,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "MassSample")
 	static bool GetIsBleedingForActor(const AActor* Actor);
 
+	UFUNCTION(BlueprintPure, Category = "MassSample")
+	static float GetLifetimeForActor(const AActor* Actor);
+
 protected:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;

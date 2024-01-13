@@ -105,3 +105,14 @@ void UMSEntitySystem::PostInitialize()
 
 	return false;
 }
+
+/*static*/ float UMSEntitySystem::GetLifetimeForActor(const AActor* Actor)
+{
+	if (const FMassLifetimeFragment* LifetimeFragment = GetFragmentForActor<FMassLifetimeFragment>(Actor))
+	{
+		return LifetimeFragment->Value;
+	}
+
+	return 0.f;
+}
+

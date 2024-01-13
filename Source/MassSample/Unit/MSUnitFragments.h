@@ -13,3 +13,11 @@ struct MASSSAMPLE_API FMassHealthFragment : public FMassFragment
     int32 Value = 100;
     bool bIsBleeding = false;
 };
+
+USTRUCT()
+struct MASSSAMPLE_API FMassLifetimeFragment : public FMassFragment
+{
+    GENERATED_BODY()
+
+    float Value = 0.f;
+};
