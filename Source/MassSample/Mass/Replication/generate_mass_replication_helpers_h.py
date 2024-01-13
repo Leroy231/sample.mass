@@ -216,57 +216,58 @@ void TMassClientBubble${fragment_short}Handler<AgentArrayItem>::SetBubbleData(co
 #endif //UE_REPLICATION_COMPILE_SERVER_CODE
 	""", trimblanklines=True)
 
-	out("""
-
+	template = Template("""
 #if UE_REPLICATION_COMPILE_CLIENT_CODE
 template<typename AgentArrayItem>
-void TMassClientBubble%sHandler<AgentArrayItem>::AddRequirementsForSpawnQuery(FMassEntityQuery& InQuery)
+void TMassClientBubble${fragment_short}Handler<AgentArrayItem>::AddRequirementsForSpawnQuery(FMassEntityQuery& InQuery)
 {
-	InQuery.AddRequirement<FMass%sFragment>(EMassFragmentAccess::ReadWrite);
+	InQuery.AddRequirement<FMass${fragment_short}Fragment>(EMassFragmentAccess::ReadWrite);
 }
 #endif // UE_REPLICATION_COMPILE_CLIENT_CODE
 
 #if UE_REPLICATION_COMPILE_CLIENT_CODE
 template<typename AgentArrayItem>
-void TMassClientBubble%sHandler<AgentArrayItem>::CacheFragmentViewsForSpawnQuery(FMassExecutionContext& InExecContext)
+void TMassClientBubble${fragment_short}Handler<AgentArrayItem>::CacheFragmentViewsForSpawnQuery(FMassExecutionContext& InExecContext)
 {
-	%sList = InExecContext.GetMutableFragmentView<FMass%sFragment>();
+	${fragment_short}List = InExecContext.GetMutableFragmentView<FMass${fragment_short}Fragment>();
 }
 #endif // UE_REPLICATION_COMPILE_CLIENT_CODE
 
 #if UE_REPLICATION_COMPILE_CLIENT_CODE
 template<typename AgentArrayItem>
-void TMassClientBubble%sHandler<AgentArrayItem>::ClearFragmentViewsForSpawnQuery()
+void TMassClientBubble${fragment_short}Handler<AgentArrayItem>::ClearFragmentViewsForSpawnQuery()
 {
-	%sList = TArrayView<FMass%sFragment>();
+	${fragment_short}List = TArrayView<FMass${fragment_short}Fragment>();
 }
 #endif // UE_REPLICATION_COMPILE_CLIENT_CODE
 
 #if UE_REPLICATION_COMPILE_CLIENT_CODE
 template<typename AgentArrayItem>
-void TMassClientBubble%sHandler<AgentArrayItem>::SetSpawnedEntityData(const int32 EntityIdx, const FReplicatedAgent%sData& Replicated%sData) const
+void TMassClientBubble${fragment_short}Handler<AgentArrayItem>::SetSpawnedEntityData(const int32 EntityIdx, const FReplicatedAgent${fragment_short}Data& Replicated${fragment_short}Data) const
 {
-	FMass%sFragment& %sFragment = %sList[EntityIdx];
+	FMass${fragment_short}Fragment& ${fragment_short}Fragment = ${fragment_short}List[EntityIdx];
 
-	SetEntityData(%sFragment, Replicated%sData);
+	SetEntityData(${fragment_short}Fragment, Replicated${fragment_short}Data);
 }
 #endif // UE_REPLICATION_COMPILE_CLIENT_CODE
 
 #if UE_REPLICATION_COMPILE_CLIENT_CODE
 template<typename AgentArrayItem>
-void TMassClientBubble%sHandler<AgentArrayItem>::SetModifiedEntityData(const FMassEntityView& EntityView, const FReplicatedAgent%sData& Replicated%sData)
+void TMassClientBubble${fragment_short}Handler<AgentArrayItem>::SetModifiedEntityData(const FMassEntityView& EntityView, const FReplicatedAgent${fragment_short}Data& Replicated${fragment_short}Data)
 {
-	FMass%sFragment& %sFragment = EntityView.GetFragmentData<FMass%sFragment>();
+	FMass${fragment_short}Fragment& ${fragment_short}Fragment = EntityView.GetFragmentData<FMass${fragment_short}Fragment>();
 
-	SetEntityData(%sFragment, Replicated%sData);
+	SetEntityData(${fragment_short}Fragment, Replicated${fragment_short}Data);
 }
 #endif // UE_REPLICATION_COMPILE_CLIENT_CODE
 
 #if UE_REPLICATION_COMPILE_CLIENT_CODE
 template<typename AgentArrayItem>
-void TMassClientBubble%sHandler<AgentArrayItem>::SetEntityData(FMass%sFragment& %sFragment, const FReplicatedAgent%sData& Replicated%sData)
+void TMassClientBubble${fragment_short}Handler<AgentArrayItem>::SetEntityData(FMass${fragment_short}Fragment& ${fragment_short}Fragment, const FReplicatedAgent${fragment_short}Data& Replicated${fragment_short}Data)
 {
-	""" % tuple([fragment_short]*29), trimblanklines=True)
+""")
+
+	out(template.substitute(fragment_short=fragment_short))
 
 	for property in replication_config['Fragments'][fragment]:
 		out("""
