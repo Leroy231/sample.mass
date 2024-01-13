@@ -63,43 +63,45 @@ ${clear_fragments}
 
 	set_handler_data = "\n".join(["\t%sHandler.SetModifiedEntityData(EntityView, Item.GetReplicated%sData());" % (handler, replicated_data_getter(handler)) for handler in handlers])
 
-	outl("""
+	template = Template("""
 #if UE_REPLICATION_COMPILE_CLIENT_CODE
-void F%sClientBubbleHandler::F%sClientBubbleHandler::PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize)
+void F${entity}ClientBubbleHandler::PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize)
 {
-    auto SetModifiedEntityData = [this](const FMassEntityView& EntityView, const FReplicated%sAgent& Item)
-    {
-        PostReplicatedChangeEntity(EntityView, Item);
-    };
+	auto SetModifiedEntityData = [this](const FMassEntityView& EntityView, const FReplicated${entity}Agent& Item)
+	{
+		PostReplicatedChangeEntity(EntityView, Item);
+	};
 
-    PostReplicatedChangeHelper(ChangedIndices, SetModifiedEntityData);
+	PostReplicatedChangeHelper(ChangedIndices, SetModifiedEntityData);
 }
 #endif //UE_REPLICATION_COMPILE_SERVER_CODE
 
 #if UE_REPLICATION_COMPILE_CLIENT_CODE
-void F%sClientBubbleHandler::PostReplicatedChangeEntity(const FMassEntityView& EntityView, const FReplicated%sAgent& Item) const
+void F${entity}ClientBubbleHandler::PostReplicatedChangeEntity(const FMassEntityView& EntityView, const FReplicated${entity}Agent& Item) const
 {
-%s
+${set_handler_data}
 }
 #endif // UE_REPLICATION_COMPILE_CLIENT_CODE
 
-A%sClientBubbleInfo::A%sClientBubbleInfo(const FObjectInitializer& ObjectInitializer)
-    : Super(ObjectInitializer)
+A${entity}ClientBubbleInfo::A${entity}ClientBubbleInfo(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
-    Serializers.Add(&BubbleSerializer);
+	Serializers.Add(&BubbleSerializer);
 }
 
-void A%sClientBubbleInfo::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void A${entity}ClientBubbleInfo::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-    FDoRepLifetimeParams SharedParams;
-    SharedParams.bIsPushBased = true;
+	FDoRepLifetimeParams SharedParams;
+	SharedParams.bIsPushBased = true;
 
-    // Technically, this doesn't need to be PushModel based because it's a FastArray and they ignore it.
-    DOREPLIFETIME_WITH_PARAMS_FAST(A%sClientBubbleInfo, BubbleSerializer, SharedParams);
+	// Technically, this doesn't need to be PushModel based because it's a FastArray and they ignore it.
+	DOREPLIFETIME_WITH_PARAMS_FAST(A${entity}ClientBubbleInfo, BubbleSerializer, SharedParams);
 }
-	""" % (entity, entity, entity, entity, entity, set_handler_data, entity, entity, entity, entity))
+	""")
+
+	outl(template.substitute(entity=entity, set_handler_data=set_handler_data))
 
 	template = Template("""
 void U${entity}Replicator::AddRequirements(FMassEntityQuery& EntityQuery)

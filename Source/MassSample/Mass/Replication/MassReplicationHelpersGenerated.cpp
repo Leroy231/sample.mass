@@ -43,7 +43,7 @@ void FMSUnitClientBubbleHandler::PostReplicatedAdd(const TArrayView<int32> Added
 	
 
 #if UE_REPLICATION_COMPILE_CLIENT_CODE
-void FMSUnitClientBubbleHandler::FMSUnitClientBubbleHandler::PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize)
+void FMSUnitClientBubbleHandler::PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize)
 {
 	auto SetModifiedEntityData = [this](const FMassEntityView& EntityView, const FReplicatedMSUnitAgent& Item)
 	{
