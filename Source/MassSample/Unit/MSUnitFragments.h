@@ -11,4 +11,5 @@ struct MASSSAMPLE_API FMassHealthFragment : public FMassFragment
     GENERATED_BODY()
 
     int32 Value = 100;
+    bool bIsBleeding = false;
 };

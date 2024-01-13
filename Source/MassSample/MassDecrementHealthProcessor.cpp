@@ -1,5 +1,6 @@
 #include "MassDecrementHealthProcessor.h"
 
+#include "MassExecutionContext.h"
 #include "MassSample/Unit/MSUnitFragments.h"
 
 UMassDecrementHealthProcessor::UMassDecrementHealthProcessor()
@@ -35,6 +36,7 @@ void UMassDecrementHealthProcessor::Execute(FMassEntityManager& EntityManager,
 		{
 			FMassHealthFragment& HealthFragment = HealthList[EntityIndex];
 			HealthFragment.Value -= 1;
+			HealthFragment.bIsBleeding = !HealthFragment.bIsBleeding;
 		}
 	});
 }

@@ -93,7 +93,7 @@ void UMSEntitySystem::PostInitialize()
 	}
 }
 
-int32 UMSEntitySystem::GetHealthForActor(const AActor* Actor)
+/*static*/ int32 UMSEntitySystem::GetHealthForActor(const AActor* Actor)
 {
 	if (const FMassHealthFragment* HealthFragment = GetFragmentForActor<FMassHealthFragment>(Actor))
 	{
@@ -101,4 +101,14 @@ int32 UMSEntitySystem::GetHealthForActor(const AActor* Actor)
 	}
 
 	return -1;
+}
+
+/*static*/ bool UMSEntitySystem::GetIsBleedingForActor(const AActor* Actor)
+{
+	if (const FMassHealthFragment* HealthFragment = GetFragmentForActor<FMassHealthFragment>(Actor))
+	{
+		return HealthFragment->bIsBleeding;
+	}
+
+	return false;
 }
