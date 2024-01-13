@@ -1,3 +1,5 @@
+import os
+
 buffer = ""
 
 def out(s, trimblanklines=False):
@@ -17,7 +19,9 @@ def outl(s, **kw):
 	
 def write_to_file(filename):
 	global buffer
-	with open(filename, "w") as text_file:
+	script_path = os.path.abspath(__file__)
+	script_dir = os.path.dirname(script_path)
+	with open(os.path.join(script_dir, filename), "w") as text_file:
 		text_file.write(buffer)
 	buffer = ""
 

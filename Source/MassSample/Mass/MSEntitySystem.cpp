@@ -4,11 +4,9 @@
 #include "MassEntityConfigAsset.h"
 #include "MassEntitySubsystem.h"
 #include "MassEntityView.h"
-#include "MassReplicationSubsystem.h"
 #include "MassSample/MSAssetManager.h"
 #include "MassSample/Data/MSGameData.h"
 #include "MassSample/Unit/MSUnitFragments.h"
-#include "Replication/MassReplicationHelpersGenerated.h"
 
 namespace MSEntitySystem::Tweakables
 {
@@ -78,11 +76,6 @@ void UMSEntitySystem::Deinitialize()
 
 void UMSEntitySystem::PostInitialize()
 {
-	auto* ReplicationSubsystem = UWorld::GetSubsystem<UMassReplicationSubsystem>(GetWorld());
-	check(ReplicationSubsystem);
-
-	ReplicationSubsystem->RegisterBubbleInfoClass(AMSUnitClientBubbleInfo::StaticClass());
-
 	const auto* SpawnerSubsystem = UWorld::GetSubsystem<UMassSpawnerSubsystem>(GetWorld());
 	check(SpawnerSubsystem);
 

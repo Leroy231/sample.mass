@@ -3,8 +3,12 @@
 import json
 from string import Template
 from generate_mass_replication_helpers_common import *
+import os
 
-replication_config = json.load(open('MassReplicationConfig.json'))
+script_path = os.path.abspath(__file__)
+script_dir = os.path.dirname(script_path)
+
+replication_config = json.load(open(os.path.join(script_dir, 'MassReplicationConfig.json')))
 
 outl("""
 // THIS IS GENERATED CODE. DO NOT MODIFY.
@@ -181,5 +185,17 @@ void FMassReplicationProcessor%sHandler::AddEntity(const int32 EntityIdx, FRepli
 %s
 }
 	""" % (fragment_short, fragment_short, fragment_short, fragment_short, fragment_short, fragment_short, fragment_short, fragment_short, fragment_short, fragment_short, fragment_short, set_values))
+
+template = Template("""
+void UMassReplicationBubbleRegistrationSubsystem::PostInitialize()
+{
+	UMassReplicationSubsystem* ReplicationSubsystem = UWorld::GetSubsystem<UMassReplicationSubsystem>(GetWorld());
+	check(ReplicationSubsystem);
+
+$register_bubbles
+}
+""")
+register_bubbles = "\n".join(["\tReplicationSubsystem->RegisterBubbleInfoClass(A%sClientBubbleInfo::StaticClass());" % (entity) for entity in replication_config['Entities']])
+outl(template.substitute(register_bubbles=register_bubbles))
 
 write_to_file("MassReplicationHelpersGenerated.cpp")

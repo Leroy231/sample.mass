@@ -1,6 +1,10 @@
 ﻿import json
 from generate_mass_replication_helpers_common import *
 from string import Template
+import os
+
+script_path = os.path.abspath(__file__)
+script_dir = os.path.dirname(script_path)
 
 outl("""#pragma once
 
@@ -12,7 +16,7 @@ outl("""#pragma once
 #include "MassReplicationProcessor.h"
 """)
 
-replication_config = json.load(open('MassReplicationConfig.json'))
+replication_config = json.load(open(os.path.join(script_dir, 'MassReplicationConfig.json')))
 type_defaults = {"int32": "0", "bool": "false"}
 module_macro = replication_config['ModuleMacro']
 
@@ -427,5 +431,16 @@ public:
 		entity = entity,
 		module_macro = module_macro,
 	))
+
+outl("""
+UCLASS()
+class UMassReplicationBubbleRegistrationSubsystem : public UWorldSubsystem
+{
+	GENERATED_BODY()
+
+protected:
+	virtual void PostInitialize() override;
+};
+""")
 
 write_to_file("MassReplicationHelpersGenerated.h")

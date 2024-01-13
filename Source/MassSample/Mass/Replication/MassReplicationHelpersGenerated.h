@@ -316,3 +316,13 @@ public:
 	void ProcessClientReplication(FMassExecutionContext& Context, FMassReplicationContext& ReplicationContext) override;
 };
 	
+
+UCLASS()
+class UMassReplicationBubbleRegistrationSubsystem : public UWorldSubsystem
+{
+	GENERATED_BODY()
+
+protected:
+	virtual void PostInitialize() override;
+};
+

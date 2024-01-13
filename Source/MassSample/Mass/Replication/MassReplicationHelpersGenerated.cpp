@@ -152,3 +152,12 @@ void FMassReplicationProcessorHealthHandler::AddEntity(const int32 EntityIdx, FR
 	InOutReplicatedHealthData.SetbIsBleeding(HealthFragment.bIsBleeding);
 }
 	
+
+void UMassReplicationBubbleRegistrationSubsystem::PostInitialize()
+{
+	UMassReplicationSubsystem* ReplicationSubsystem = UWorld::GetSubsystem<UMassReplicationSubsystem>(GetWorld());
+	check(ReplicationSubsystem);
+
+	ReplicationSubsystem->RegisterBubbleInfoClass(AMSUnitClientBubbleInfo::StaticClass());
+}
+
