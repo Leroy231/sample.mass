@@ -9,7 +9,7 @@
 
 namespace MS::StateTreeTask_Move::Tweakables
 {
-	bool bSkipMoveTask = false;
+	bool bSkipMoveTask = true;
 
 	FAutoConsoleVariableRef CVars[] =
 	{

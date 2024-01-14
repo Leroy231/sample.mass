@@ -4,6 +4,9 @@
 #include "MassEntityConfigAsset.h"
 #include "MassEntitySubsystem.h"
 #include "MassEntityView.h"
+#include "MassReplicationFragments.h"
+#include "MassReplicationSubsystem.h"
+#include "MassSample/MassUpdateEntitiesProcessor.h"
 #include "MassSample/MSAssetManager.h"
 #include "MassSample/Data/MSGameData.h"
 #include "MassSample/Unit/MSUnitFragments.h"
@@ -116,3 +119,82 @@ void UMSEntitySystem::PostInitialize()
 	return 0.f;
 }
 
+/*static*/ void UMSEntitySystem::GetEntityForActor(const AActor* Actor, int32& OutEntityIndex, int32& OutEntitySerialNumber)
+{
+	const FMassEntityHandle EntityHandle = GetMassEntityHandle(Actor);
+	if (!EntityHandle.IsValid())
+	{
+		return;
+	}
+
+	OutEntityIndex = EntityHandle.Index;
+	OutEntitySerialNumber = EntityHandle.SerialNumber;
+}
+
+/*static*/ int32 UMSEntitySystem::GetNetIDForActorEntity(const AActor* Actor)
+{
+	if (const FMassNetworkIDFragment* NetworkIDFragment = GetFragmentForActor<FMassNetworkIDFragment>(Actor))
+	{
+		const uint32 NetID = NetworkIDFragment->NetID.GetValue();
+		const UMassReplicationSubsystem* ReplicationSubsystem = UWorld::GetSubsystem<UMassReplicationSubsystem>(Actor->GetWorld());
+		const FMassEntityHandle Entity = ReplicationSubsystem->FindEntity(FMassNetworkID(static_cast<uint32>(NetID)));
+		UE_LOG(LogTemp, Warning, TEXT("Actor %s has Entity %s and NetID [%d]"), *Actor->GetName(), *Entity.DebugGetDescription(), NetID);
+
+		return static_cast<int32>(NetID);
+	}
+
+	return 0.f;
+}
+
+/*static*/ void UMSEntitySystem::MoveEntity(const UObject* WorldContextObject, const int32 EntityNetID, const FVector& Delta)
+{
+	const UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::Assert);
+	const UMassReplicationNetworkIDEntityMapSubsystem* NetworkIDEntityMapSubsystem = UWorld::GetSubsystem<UMassReplicationNetworkIDEntityMapSubsystem>(World);
+	const FMassEntityHandle* Entity = NetworkIDEntityMapSubsystem->NetworkIDEntityMap.Find(FMassNetworkID(static_cast<uint32>(EntityNetID)));
+
+	if (!Entity || !Entity->IsValid())
+	{
+		return;
+	}
+
+	const FMassEntityManager* EntityManager = UE::Mass::Utils::GetEntityManager(World);
+	if (!EntityManager)
+	{
+		return;
+	}
+
+	if (FMassHealthFragment* HealthFragment = EntityManager->GetFragmentDataPtr<FMassHealthFragment>(*Entity))
+	{
+		HealthFragment->Value -= 1;
+	}
+
+	if (FTransformFragment* TransformFragment = EntityManager->GetFragmentDataPtr<FTransformFragment>(*Entity))
+	{
+		TransformFragment->GetMutableTransform().AddToTranslation(Delta);
+	}
+
+	//UMassReplicationRpcSubsystem* RpcSubsystem = World->GetSubsystem<UMassReplicationRpcSubsystem>();
+
+	//FMassReplicationRpc Rpc;
+	//Rpc.Type = EMassReplicationRpcType::Move;
+	//Rpc.Delta = Delta;
+	//RpcSubsystem->Queue.Add(static_cast<uint32>(EntityNetID), Rpc);
+
+	//UE_LOG(LogTemp, Warning, TEXT("Entity with NetID [%d] queued RPC with delta: %s"), EntityNetID, *Delta.ToCompactString());
+}
+
+/*static*/ void UMSEntitySystem::ToggleUpdateEntityProcessor(const UObject* WorldContextObject, const int32 EntityIndex, const int32 EntitySerialNumber)
+{
+	UE_LOG(LogTemp, Error, TEXT("ToggleUpdateEntityProcessor not yet implemented"));
+
+	//const FMassEntityHandle Entity(EntityIndex, EntitySerialNumber);
+	//const UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::Assert);
+
+	//UMassReplicationRpcSubsystem* RpcSubsystem = World->GetSubsystem<UMassReplicationRpcSubsystem>();
+
+	//FMassReplicationRpc Rpc;
+	//Rpc.Type = EMassReplicationRpcType::ToggleUpdateEntitiesProcessor;
+	//RpcSubsystem->Queue.Add(Entity, Rpc);
+
+	//UE_LOG(LogTemp, Warning, TEXT("Entity [%s] queued generic RPC"), *Entity.DebugGetDescription());
+}

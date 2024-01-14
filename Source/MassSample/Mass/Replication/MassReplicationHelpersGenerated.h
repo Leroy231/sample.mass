@@ -14,6 +14,8 @@
 
 #include "MassReplicationHelpersGenerated.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogMassReplicationGenerated, Log, All);
+
 template<typename AgentArrayItem>
 class TClientBubbleHandlerBase2 : public TClientBubbleHandlerBase<AgentArrayItem>
 {
@@ -152,6 +154,7 @@ void TMassClientBubbleHealthHandler<AgentArrayItem>::SetBubbleData(const FMassRe
 
 	FReplicatedAgentHealthData& ReplicatedHealth = Item.Agent.GetReplicatedHealthDataMutable();
 
+	const auto OldReplicatedHealth = ReplicatedHealth.GetValue();
 	if (ReplicatedHealth.GetValue() != HealthFragment.Value)
 	{
 		ReplicatedHealth.SetValue(HealthFragment.Value);
@@ -162,6 +165,8 @@ void TMassClientBubbleHealthHandler<AgentArrayItem>::SetBubbleData(const FMassRe
 		ReplicatedHealth.SetbIsBleeding(HealthFragment.bIsBleeding);
 		bMarkDirty = true;
 	}
+
+	UE_VLOG(GWorld, LogMassReplicationGenerated, Verbose, TEXT("[TMassClientBubbleHealthHandler::SetBubbleData] Agent [i: %d sn: %d], bMarkDirty: %d, OldReplicatedHealth: %d, NewReplicatedHealth: %d"), Handle.GetIndex(), Handle.GetSerialNumber(), bMarkDirty, OldReplicatedHealth, ReplicatedHealth.GetValue());
 
 	if (bMarkDirty)
 	{
@@ -239,6 +244,7 @@ public:
 template<typename AgentArrayItem>
 void FMassReplicationProcessorHealthHandler::ModifyEntity(const FMassReplicatedAgentHandle Handle, const int32 EntityIdx, TMassClientBubbleHealthHandler<AgentArrayItem>& BubbleHealthHandler)
 {
+	check(Handle.IsValid());
 	const FMassHealthFragment& HealthFragment = HealthList[EntityIdx];
 	BubbleHealthHandler.SetBubbleData(Handle, HealthFragment);
 }
@@ -374,6 +380,7 @@ public:
 template<typename AgentArrayItem>
 void FMassReplicationProcessorLifetimeHandler::ModifyEntity(const FMassReplicatedAgentHandle Handle, const int32 EntityIdx, TMassClientBubbleLifetimeHandler<AgentArrayItem>& BubbleLifetimeHandler)
 {
+	check(Handle.IsValid());
 	const FMassLifetimeFragment& LifetimeFragment = LifetimeList[EntityIdx];
 	BubbleLifetimeHandler.SetBubbleData(Handle, LifetimeFragment);
 }

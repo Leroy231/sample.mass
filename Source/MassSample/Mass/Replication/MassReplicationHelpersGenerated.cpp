@@ -1,11 +1,14 @@
 // THIS IS GENERATED CODE. DO NOT MODIFY.
 // REGENERATE WITH: python generate_mass_replication_helpers.py
 
+UE_DISABLE_OPTIMIZATION
+
 #include "MassReplicationHelpersGenerated.h"
 
 #include "Net/UnrealNetwork.h"
 #include "MassExecutionContext.h"
 
+DEFINE_LOG_CATEGORY(LogMassReplicationGenerated);
 
 
 #if UE_REPLICATION_COMPILE_CLIENT_CODE
@@ -112,6 +115,7 @@ void UMSUnitReplicator::ProcessClientReplication(FMassExecutionContext& Context,
 
 	auto AddEntityCallback = [&RepSharedFrag, &PositionYawHandler, &HealthHandler, &LifetimeHandler](FMassExecutionContext& Context, const int32 EntityIdx, FReplicatedMSUnitAgent& InReplicatedAgent, const FMassClientHandle ClientHandle) -> FMassReplicatedAgentHandle
 	{
+		UE_VLOG(GWorld, LogMassReplicationGenerated, Verbose, TEXT("[UMSUnitReplicator::ProcessClientReplication][AddEntityCallback] Entity [%s] ClientHandle [i: %d sn: %d]"), *Context.GetEntity(EntityIdx).DebugGetDescription(), ClientHandle.GetIndex(), ClientHandle.GetSerialNumber());
 		AMSUnitClientBubbleInfo& UnitBubbleInfo = RepSharedFrag->GetTypedClientBubbleInfoChecked<AMSUnitClientBubbleInfo>(ClientHandle);
 
 		PositionYawHandler.AddEntity(EntityIdx, InReplicatedAgent.GetReplicatedPositionYawDataMutable());
@@ -121,8 +125,10 @@ void UMSUnitReplicator::ProcessClientReplication(FMassExecutionContext& Context,
 		return UnitBubbleInfo.GetBubbleSerializer().Bubble.AddAgent(Context.GetEntity(EntityIdx), InReplicatedAgent);
 	};
 
-	auto ModifyEntityCallback = [&RepSharedFrag, &PositionYawHandler, &HealthHandler, &LifetimeHandler](FMassExecutionContext&, const int32 EntityIdx, const EMassLOD::Type, const double, const FMassReplicatedAgentHandle Handle, const FMassClientHandle ClientHandle)
+	auto ModifyEntityCallback = [this, &RepSharedFrag, &PositionYawHandler, &HealthHandler, &LifetimeHandler](const FMassExecutionContext& Context, const int32 EntityIdx, const EMassLOD::Type, const double, const FMassReplicatedAgentHandle Handle, const FMassClientHandle ClientHandle)
 	{
+		UE_VLOG(GWorld, LogMassReplicationGenerated, Verbose, TEXT("[UMSUnitReplicator::ProcessClientReplication][ModifyEntityCallback] Entity [%s], Agent [i: %d sn: %d], ClientHandle: [i: %d sn: %d]"), *Context.GetEntity(EntityIdx).DebugGetDescription(), Handle.GetIndex(), Handle.GetSerialNumber(), ClientHandle.GetIndex(), ClientHandle.GetSerialNumber());
+		check(Handle.IsValid());
 		AMSUnitClientBubbleInfo& UnitBubbleInfo = RepSharedFrag->GetTypedClientBubbleInfoChecked<AMSUnitClientBubbleInfo>(ClientHandle);
 
 		auto& Bubble = UnitBubbleInfo.GetBubbleSerializer().Bubble;
@@ -134,6 +140,8 @@ void UMSUnitReplicator::ProcessClientReplication(FMassExecutionContext& Context,
 
 	auto RemoveEntityCallback = [&RepSharedFrag](FMassExecutionContext&, const FMassReplicatedAgentHandle Handle, const FMassClientHandle ClientHandle)
 	{
+		check(Handle.IsValid());
+		UE_VLOG(GWorld, LogMassReplicationGenerated, Verbose, TEXT("[UMSUnitReplicator::ProcessClientReplication][RemoveEntityCallback] Agent [i: %d sn: %d], ClientHandle: [i: %d sn: %d]"), Handle.GetIndex(), Handle.GetSerialNumber(), ClientHandle.GetIndex(), ClientHandle.GetSerialNumber());
 		AMSUnitClientBubbleInfo& UnitBubbleInfo = RepSharedFrag->GetTypedClientBubbleInfoChecked<AMSUnitClientBubbleInfo>(ClientHandle);
 
 		UnitBubbleInfo.GetBubbleSerializer().Bubble.RemoveAgentChecked(Handle);
@@ -189,3 +197,4 @@ void UMassReplicationBubbleRegistrationSubsystem::PostInitialize()
 	ReplicationSubsystem->RegisterBubbleInfoClass(AMSUnitClientBubbleInfo::StaticClass());
 }
 
+UE_ENABLE_OPTIMIZATION
