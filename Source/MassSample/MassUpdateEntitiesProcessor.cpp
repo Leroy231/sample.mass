@@ -1,5 +1,6 @@
 #include "MassUpdateEntitiesProcessor.h"
 
+#include "MassActorSubsystem.h"
 #include "MassCommonFragments.h"
 #include "MassExecutionContext.h"
 #include "MassReplicationFragments.h"
@@ -53,7 +54,7 @@ void UMassUpdateEntitiesProcessor::Execute(FMassEntityManager& EntityManager, FM
 			//FTransformFragment& TransformFragment = TransformList[EntityIndex];
 			//FTransform& Transform = TransformFragment.GetMutableTransform();
 
-			UE_VLOG(this, LogMassReplicationGenerated, Verbose, TEXT("[%s] Entity [%s] Has FMassInReplicationGridTag: %d, ReplicationLOD: %s"), *StaticClass()->GetName(), *Entity.DebugGetDescription(), Context.DoesArchetypeHaveTag<FMassInReplicationGridTag>(), *UEnum::GetDisplayValueAsText(ReplicationLODFragment.LOD).ToString());
+			UE_VLOG(this, LogMass, Verbose, TEXT("[%s] Entity [%s] Has FMassInReplicationGridTag: %d, ReplicationLOD: %s"), *StaticClass()->GetName(), *Entity.DebugGetDescription(), Context.DoesArchetypeHaveTag<FMassInReplicationGridTag>(), *UEnum::GetDisplayValueAsText(ReplicationLODFragment.LOD).ToString());
 			if (bIsEnabled)
 			{
 				HealthFragment.Value -= 1;
@@ -95,8 +96,8 @@ void UMassUpdateEntitiesProcessor::Execute(FMassEntityManager& EntityManager, FM
 			{
 				Viewers.Add(*ViewerInfo);
 			}
-			UE_VLOG(this, LogMassReplicationGenerated, Verbose, TEXT("[%s] Client [i: %d sn: %d] Viewer [i: %d sn: %d], PlayerController: %s"), *StaticClass()->GetName(), ClientHandle.GetIndex(), ClientHandle.GetSerialNumber(), ClientViewerHandle.GetIndex(), ClientViewerHandle.GetSerialNumber(), *ViewerInfo->PlayerController->GetName());
-			UE_VLOG_LOCATION(this, LogMassReplicationGenerated, Verbose, ViewerInfo->Location, 10.f, FColor::Red, TEXT("Client [i: %d sn: %d] Viewer [i: %d sn: %d], PlayerController: %s"), ClientHandle.GetIndex(), ClientHandle.GetSerialNumber(), ClientViewerHandle.GetIndex(), ClientViewerHandle.GetSerialNumber(), *ViewerInfo->PlayerController->GetName());
+			UE_VLOG(this, LogMass, Verbose, TEXT("[%s] Client [i: %d sn: %d] Viewer [i: %d sn: %d], PlayerController: %s"), *StaticClass()->GetName(), ClientHandle.GetIndex(), ClientHandle.GetSerialNumber(), ClientViewerHandle.GetIndex(), ClientViewerHandle.GetSerialNumber(), *ViewerInfo->PlayerController->GetName());
+			UE_VLOG_LOCATION(this, LogMass, Verbose, ViewerInfo->Location, 10.f, FColor::Red, TEXT("Client [i: %d sn: %d] Viewer [i: %d sn: %d], PlayerController: %s"), ClientHandle.GetIndex(), ClientHandle.GetSerialNumber(), ClientViewerHandle.GetIndex(), ClientViewerHandle.GetSerialNumber(), *ViewerInfo->PlayerController->GetName());
 		}
 
 		// Prepare LOD collector and calculator
@@ -126,12 +127,12 @@ void UMassUpdateEntitiesProcessor::Execute(FMassEntityManager& EntityManager, FM
 				FTransformFragment& TransformFragment = TransformList[EntityIdx];
 
 				const bool bHasAgent = ClientReplicationInfo.AgentsData.Contains(Entity);
-				UE_VLOG(this, LogMassReplicationGenerated, Verbose, TEXT("[%s] Entity [%s] bHasAgent: %d, ReplicationLOD: %s, AgentLOD: %s, NetID: %d"), *StaticClass()->GetName(), *Entity.DebugGetDescription(), bHasAgent, *UEnum::GetDisplayValueAsText(LODFragment.LOD).ToString(), *UEnum::GetDisplayValueAsText(AgentFragment.AgentData.LOD).ToString(), NetworkIDFragment.NetID.GetValue());
-				UE_VLOG_LOCATION(this, LogMassReplicationGenerated, Verbose, TransformFragment.GetTransform().GetLocation(), 10.f, FColor::Red, TEXT("Entity [%s] bHasAgent: %d, ReplicationLOD: %s, AgentLOD: %s, NetID: %d"), *Entity.DebugGetDescription(), bHasAgent, *UEnum::GetDisplayValueAsText(LODFragment.LOD).ToString(), *UEnum::GetDisplayValueAsText(AgentFragment.AgentData.LOD).ToString(), NetworkIDFragment.NetID.GetValue());
+				UE_VLOG(this, LogMass, Verbose, TEXT("[%s] Entity [%s] bHasAgent: %d, ReplicationLOD: %s, AgentLOD: %s, NetID: %d"), *StaticClass()->GetName(), *Entity.DebugGetDescription(), bHasAgent, *UEnum::GetDisplayValueAsText(LODFragment.LOD).ToString(), *UEnum::GetDisplayValueAsText(AgentFragment.AgentData.LOD).ToString(), NetworkIDFragment.NetID.GetValue());
+				UE_VLOG_LOCATION(this, LogMass, Verbose, TransformFragment.GetTransform().GetLocation(), 10.f, FColor::Red, TEXT("Entity [%s] bHasAgent: %d, ReplicationLOD: %s, AgentLOD: %s, NetID: %d"), *Entity.DebugGetDescription(), bHasAgent, *UEnum::GetDisplayValueAsText(LODFragment.LOD).ToString(), *UEnum::GetDisplayValueAsText(AgentFragment.AgentData.LOD).ToString(), NetworkIDFragment.NetID.GetValue());
 			}
 		});
 
-		UE_VLOG(this, LogMassReplicationGenerated, Verbose, TEXT("[%s] Client [i: %d sn: %d] MaxLODDistance: %.1f, HandledEntitiesCount: %d, AgentsDataCount: %d"), *StaticClass()->GetName(), ClientHandle.GetIndex(), ClientHandle.GetSerialNumber(), MaxLODDistance, ClientReplicationInfo.HandledEntities.Num(), ClientReplicationInfo.AgentsData.Num());
+		UE_VLOG(this, LogMass, Verbose, TEXT("[%s] Client [i: %d sn: %d] MaxLODDistance: %.1f, HandledEntitiesCount: %d, AgentsDataCount: %d"), *StaticClass()->GetName(), ClientHandle.GetIndex(), ClientHandle.GetSerialNumber(), MaxLODDistance, ClientReplicationInfo.HandledEntities.Num(), ClientReplicationInfo.AgentsData.Num());
 	}
 }
 
@@ -181,3 +182,27 @@ void UMassNetworkIDEntityMapInitializer::Execute(FMassEntityManager& EntityManag
 	}
 }
 
+/*static*/ AActor* UMSBPFunctionLibrary::GetActorForEntityWithNetID(const UObject* WorldContextObject, const int32 EntityNetID)
+{
+	const UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::Assert);
+	const UMassReplicationNetworkIDEntityMapSubsystem* NetworkIDEntityMapSubsystem = UWorld::GetSubsystem<UMassReplicationNetworkIDEntityMapSubsystem>(World);
+	const FMassEntityHandle* Entity = NetworkIDEntityMapSubsystem->NetworkIDEntityMap.Find(FMassNetworkID(static_cast<uint32>(EntityNetID)));
+
+	if (!Entity || !Entity->IsValid())
+	{
+		return nullptr;
+	}
+
+	const FMassEntityManager* EntityManager = UE::Mass::Utils::GetEntityManager(World);
+	if (!EntityManager)
+	{
+		return nullptr;
+	}
+
+	if (FMassActorFragment* ActorFragment = EntityManager->GetFragmentDataPtr<FMassActorFragment>(*Entity))
+	{
+		return ActorFragment->GetMutable();
+	}
+
+	return nullptr;
+}

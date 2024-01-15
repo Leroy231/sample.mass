@@ -45,3 +45,12 @@ protected:
 
 	FMassEntityQuery EntityQuery;
 };
+
+UCLASS()
+class MASSSAMPLE_API UMSBPFunctionLibrary : public UBlueprintFunctionLibrary
+{
+  GENERATED_BODY()
+
+  UFUNCTION(BlueprintPure, Category = "MassSample", meta = (WorldContext = "WorldContextObject") )
+  static AActor* GetActorForEntityWithNetID(const UObject* WorldContextObject, const int32 EntityNetID);
+};

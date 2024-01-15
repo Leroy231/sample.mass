@@ -138,7 +138,7 @@ void UMSEntitySystem::PostInitialize()
 		const uint32 NetID = NetworkIDFragment->NetID.GetValue();
 		const UMassReplicationSubsystem* ReplicationSubsystem = UWorld::GetSubsystem<UMassReplicationSubsystem>(Actor->GetWorld());
 		const FMassEntityHandle Entity = ReplicationSubsystem->FindEntity(FMassNetworkID(static_cast<uint32>(NetID)));
-		UE_LOG(LogTemp, Warning, TEXT("Actor %s has Entity %s and NetID [%d]"), *Actor->GetName(), *Entity.DebugGetDescription(), NetID);
+		//UE_LOG(LogTemp, Warning, TEXT("Actor %s has Entity %s and NetID [%d]"), *Actor->GetName(), *Entity.DebugGetDescription(), NetID);
 
 		return static_cast<int32>(NetID);
 	}
