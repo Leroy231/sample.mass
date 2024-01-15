@@ -51,6 +51,19 @@ public:
 	UFUNCTION(BlueprintPure, Category = "MassSample")
 	static float GetLifetimeForActor(const AActor* Actor);
 
+	UFUNCTION(BlueprintPure, Category = "MassSample", meta=(DefaultToSelf = "Actor"))
+	static void GetEntityForActor(const AActor* Actor, int32& OutEntityIndex, int32& OutEntitySerialNumber);
+
+	// Although NetIDs are uint32, we use int32 here because Blueprint doesn't support uint32.
+	UFUNCTION(BlueprintPure, Category = "MassSample", meta=(DefaultToSelf = "Actor"))
+	static int32 GetNetIDForActorEntity(const AActor* Actor);
+
+	UFUNCTION(BlueprintCallable, Category = "MassSample", meta = (WorldContext="WorldContextObject"))
+	static void MoveEntity(const UObject* WorldContextObject, const int32 EntityNetID, const FVector& Delta);
+
+	UFUNCTION(BlueprintCallable, Category = "MassSample", meta = (WorldContext="WorldContextObject"))
+	static void ToggleUpdateEntityProcessor(const UObject* WorldContextObject, int32 EntityIndex, int32 EntitySerialNumber);
+
 protected:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
